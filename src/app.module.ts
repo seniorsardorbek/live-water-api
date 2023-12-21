@@ -8,9 +8,9 @@ import config from './shared/config';
 @Module({
   imports: [
     MongooseModule.forRoot(`${config.db.host}/${config.db.name}`),
-    UsersModule,
+    UsersModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}

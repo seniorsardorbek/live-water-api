@@ -1,4 +1,4 @@
-import "dotenv/config";
+import 'dotenv/config';
 
 interface Config {
   port: number;
@@ -21,11 +21,11 @@ const config: Config = {
     port: parseInt(process.env.DB_PORT!),
     username: process.env.DB_USER!,
     password: process.env.DB_PASSWORD!,
-    name: process.env.DB_NAME!,
+    name: process.env.DB_NAME!
   },
   jwt: {
-    secret: process.env.JWT_SECRET!,
-  },
+    secret: process.env.JWT_SECRET!
+  }
 };
 
 export default config;
