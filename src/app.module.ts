@@ -4,13 +4,15 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { RegionsModule } from './regions/regions.module';
-import config from './shared/config';
+import { DevicesModule } from './devices/devices.module';
+import config from './_shared/config';
 
 @Module({
   imports: [
     MongooseModule.forRoot(`${config.db.host}/${config.db.name}`),
     UsersModule,
-    RegionsModule
+    RegionsModule,
+    DevicesModule
   ],
   controllers: [AppController],
   providers: [AppService]

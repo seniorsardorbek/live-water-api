@@ -12,6 +12,18 @@ export class Region {
         type: String,
         required: true
     })
-    name: String;
+    name: string;
+
 }
 export const RegionSchema = SchemaFactory.createForClass(Region);
+
+RegionSchema.virtual('devicesCount', {
+    ref: 'Device',
+    localField: '_id',
+    foreignField: 'region',
+    justOne: false,
+    count : true
+  });
+
+// RegionSchema.set('toObject', { virtuals: true });
+RegionSchema.set('toJSON', { virtuals: true });

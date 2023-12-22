@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { ObjectId } from 'mongoose';
-import { UserRole } from 'src/shared/enums';
+import { UserRole } from 'src/_shared/enums';
 
 @Schema({
     versionKey: false,
@@ -14,22 +14,22 @@ export class User {
         type: String,
         required: true
     })
-    first_name: String;
+    first_name: string;
     @Prop({
         type: String,
         required: true
     })
-    last_name: String;
+    last_name: string;
     @Prop({
         type: String,
         required: true
     })
-    username: String;
+    username: string;
     @Prop({
         type: String,
         required: true
     })
-    password: String;
+    password: string;
     @Prop({
         type: String,
         enum: UserRole,
@@ -37,10 +37,20 @@ export class User {
     })
     role: string;
     @Prop({
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Region', 
     })
     region: ObjectId;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.virtual('devices', {
+    ref: 'Device',
+    localField: '_id',
+    foreignField: 'owner',
+    justOne: false,
+  });
+
+// UserSchema.set('toObject', { virtuals: true });
+UserSchema.set('toJSON', { virtuals: true });

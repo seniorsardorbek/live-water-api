@@ -4,6 +4,7 @@ import { UpdateRegionDto } from './dto/update-region.dto';
 import { Model, ObjectId } from 'mongoose';
 import { Region } from './Schema/Regions';
 import { InjectModel } from '@nestjs/mongoose';
+import { Device } from 'src/devices/Schema/Device';
 
 @Injectable()
 export class RegionsService {
@@ -13,11 +14,12 @@ export class RegionsService {
   }
 
   findAll() {
-    return this.regionModel.find()
+    return this.regionModel.find().populate('devicesCount')
   }
 
-  findOne(id: string) {
-    return this.regionModel.findById(id)
+  async findOne(id: string) {
+    const regionWithDevices = await this.regionModel.findById(id).populate('devicesCount')
+    return regionWithDevices;
   }
 
   async update(id: string, updateRegionDto: UpdateRegionDto) {

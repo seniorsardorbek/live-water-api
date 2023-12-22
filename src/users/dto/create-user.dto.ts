@@ -1,6 +1,6 @@
 import { IsEnum, IsMongoId, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { ObjectId, isObjectIdOrHexString } from 'mongoose';
-import { UserRole } from 'src/shared/enums';
+import { UserRole } from 'src/_shared/enums';
 
 export class CreateUserDto {
     @IsString()

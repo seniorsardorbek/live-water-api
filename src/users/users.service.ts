@@ -15,11 +15,11 @@ export class UsersService {
   }
 
   findAll() {
-    return this.userModel.find().populate('region' , 'name').select('-password');;
+    return this.userModel.find().populate([{path :'devices' , select :'port serie ip_address -owner'}]).select('-password');;
   }
 
   findOne(id: string) {
-    return this.userModel.findById(id).populate('region' , 'name').select('-password');
+    return this.userModel.findById(id).populate([{path :'devices' , select :'port serie ip_address -owner'}]).select('-password');
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
