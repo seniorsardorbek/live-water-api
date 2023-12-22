@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { RegionsModule } from './regions/regions.module';
 import { DevicesModule } from './devices/devices.module';
+import { BasedataModule } from './basedata/basedata.module';
 import config from './_shared/config';
 
 @Module({
@@ -12,7 +13,8 @@ import config from './_shared/config';
     MongooseModule.forRoot(`${config.db.host}/${config.db.name}`),
     UsersModule,
     RegionsModule,
-    DevicesModule
+    DevicesModule,
+    BasedataModule,
   ],
   controllers: [AppController],
   providers: [AppService]

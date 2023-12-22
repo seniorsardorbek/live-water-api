@@ -5,6 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './Schema/Users';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
+import { PaginationResponse } from 'src/_shared/response';
+import { QueryDto } from 'src/_shared/query.dto';
 const saltOrRounds = 12
 @Injectable()
 export class UsersService {
@@ -14,12 +16,32 @@ export class UsersService {
     return this.userModel.create(data)
   }
 
-  findAll() {
-    return this.userModel.find().populate([{path :'devices' , select :'port serie ip_address -owner'}]).select('-password');;
+  async findAll({
+    page,
+    q,
+  }: QueryDto): Promise<PaginationResponse<User>> {
+    const { limit = 10, offset = 0 } = page || {};
+    const search = q
+      ? {
+        username: {
+          $regex: q,
+          $options: 'i',
+        },
+      }
+      : {};
+
+    const total = await this.userModel
+      .find({ ...search })
+      .countDocuments()
+
+    const data = await this.userModel.find({ ...search }).populate([{ path: 'devices', select: 'port serie ip_address -owner' }]).select('-password')
+      .limit(limit)
+      .skip(limit * offset)
+    return { data, limit, offset, total }
   }
 
   findOne(id: string) {
-    return this.userModel.findById(id).populate([{path :'devices' , select :'port serie ip_address -owner'}]).select('-password');
+    return this.userModel.findById(id).populate([{ path: 'devices', select: 'port serie ip_address -owner' }]).select('-password');
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
