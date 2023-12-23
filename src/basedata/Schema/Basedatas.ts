@@ -48,4 +48,4 @@ export const BasedataSchema = SchemaFactory.createForClass(Basedata);
 
 
 // BasedataSchema.set('toObject', { virtuals: true });
-BasedataSchema.set('toJSON', { virtuals: true });
+// BasedataSchema.set('toJSON', { virtuals: true });
