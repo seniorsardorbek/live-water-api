@@ -6,7 +6,9 @@ import { UsersModule } from './users/users.module';
 import { RegionsModule } from './regions/regions.module';
 import { DevicesModule } from './devices/devices.module';
 import { BasedataModule } from './basedata/basedata.module';
+import { ServerdataModule } from './serverdata/serverdata.module';
 import config from './_shared/config';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import config from './_shared/config';
     RegionsModule,
     DevicesModule,
     BasedataModule,
+    ServerdataModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService]

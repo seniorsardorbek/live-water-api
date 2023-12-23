@@ -6,12 +6,16 @@ import {
   Patch,
   Param,
   Delete,
-  Query
+  Query,
+  UseGuards
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryDto } from 'src/_shared/query.dto';
+import { SetRoles } from 'src/auth/set-roles.decorator';
+import { IsLoggedIn } from 'src/auth/is-loggin.guard';
+import { HasRole } from 'src/auth/has-roles.guard';
 
 @Controller('users')
 
@@ -23,6 +27,8 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  // @SetRoles('super_admin', 'admin')
+  // @UseGuards(IsLoggedIn, HasRole)
   @Get()
   findAll(@Query() query: QueryDto) {
     return this.usersService.findAll(query);
