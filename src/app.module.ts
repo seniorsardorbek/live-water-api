@@ -9,12 +9,14 @@ import { BasedataModule } from './basedata/basedata.module';
 import { ServerdataModule } from './serverdata/serverdata.module';
 import config from './_shared/config';
 import { AuthModule } from './auth/auth.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     MongooseModule.forRoot(`${config.db.host}/${config.db.name}`),
     UsersModule,
     RegionsModule,
+    ScheduleModule.forRoot(),
     DevicesModule,
     BasedataModule,
     ServerdataModule,

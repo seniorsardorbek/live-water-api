@@ -7,15 +7,24 @@ import { Model } from 'mongoose';
 import { QueryDto } from 'src/_shared/query.dto';
 import { PaginationResponse } from 'src/_shared/response';
 import { BasedataQueryDto } from './dto/basedata.query.dto';
+import { Device } from 'src/devices/Schema/Device';
+import { gRN } from 'src/_shared/utils';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class BasedataService {
-  constructor(@InjectModel(Basedata.name) private basedataModel: Model<Basedata>) { }
-  create(createBasedatumDto: CreateBasedatumDto) {
-    return this.basedataModel.create(createBasedatumDto);
+  constructor(@InjectModel(Basedata.name) private basedataModel: Model<Basedata>, @InjectModel(Device.name) private deviceModel: Model<Device>) { }
+  @Cron(CronExpression.EVERY_HOUR)
+  async create(createBasedatumDto: CreateBasedatumDto) {
+    console.log("Creating....");
+    const devices = await this.deviceModel.find()
+    devices.map((el) => {
+      const date_in_ms = new Date().getTime()
+      return this.basedataModel.create({ level: gRN(5, 59), volume: gRN(0.1, 1.2), salinity: gRN(1, 10), device: el._id, signal: "good", date_in_ms });
+    })
   }
-  
-// ! Barcha ma'lumotlarni olish uchun
+
+  // ! Barcha ma'lumotlarni olish uchun
   async findAll({ page, filter, sort }: BasedataQueryDto): Promise<PaginationResponse<Basedata>> {
     const { limit = 10, offset = 0 } = page || {};
     const { by, order = 'desc' } = sort || {};
@@ -30,27 +39,27 @@ export class BasedataService {
     return { data, limit, offset, total };
   }
 
-//! Bitta qurilma ma'lumotlarini olish uchun
+  //! Bitta qurilma ma'lumotlarini olish uchun
   async findOneDevice({ page }: QueryDto, id: string): Promise<PaginationResponse<Basedata>> {
     const { limit = 10, offset = 0 } = page || {};
 
-    const total = await this.basedataModel.find({device : id}).countDocuments();
+    const total = await this.basedataModel.find({ device: id }).countDocuments();
     const data = await this.basedataModel
-      .find({device : id})
+      .find({ device: id })
       // .populate([{ path: 'device', select: 'port serie ip_address ' }])
       .limit(limit)
       .skip(limit * offset);
     return { data, limit, offset, total };
   }
 
-//! Bitta malumotni olish uchun
+  //! Bitta malumotni olish uchun
   findOne(id: string) {
     return this.basedataModel.findById(id);
   }
 
-// ! Bitta mal'lumotni yangilash uchun
-  update(id: string, updateBasedatumDto: UpdateBasedatumDto) {
-    const updated = this.basedataModel.findByIdAndUpdate(id, updateBasedatumDto, { new: true });
+  // ! Bitta mal'lumotni yangilash uchun
+  async update(id: string, updateBasedatumDto: UpdateBasedatumDto) {
+    const updated = await this.basedataModel.findByIdAndUpdate(id, updateBasedatumDto, { new: true });
     if (updated) {
       return { msg: 'Muvaffaqqiyatli yangilandi!' };
     } else {
@@ -58,9 +67,9 @@ export class BasedataService {
     }
   }
 
-//! Bitta mal'lumotni o'chirish uchun
- async remove(id: string) {
-    const removed =  await this.basedataModel.findByIdAndDelete(id, { new: true });
+  //! Bitta mal'lumotni o'chirish uchun
+  async remove(id: string) {
+    const removed = await this.basedataModel.findByIdAndDelete(id, { new: true });
     if (removed) {
       return { msg: "Muvaffaqqiyatli o'chirildi!" };
     } else {

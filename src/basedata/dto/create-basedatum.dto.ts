@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsString } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { ObjectId } from "mongoose";
 import { Status } from "src/_shared/enums";
 
@@ -16,7 +16,8 @@ export class CreateBasedatumDto {
     salinity: number
 
     @IsNumber()
-    date_in_ms: number
+    @IsOptional()
+    date_in_ms?: number
 
     @IsEnum(Status)
     signal: Status
