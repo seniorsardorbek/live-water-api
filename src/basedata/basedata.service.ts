@@ -59,8 +59,8 @@ export class BasedataService {
   }
 
 //! Bitta mal'lumotni o'chirish uchun
-  remove(id: string) {
-    const removed = this.basedataModel.findByIdAndDelete(id, { new: true });
+ async remove(id: string) {
+    const removed =  await this.basedataModel.findByIdAndDelete(id, { new: true });
     if (removed) {
       return { msg: "Muvaffaqqiyatli o'chirildi!" };
     } else {
