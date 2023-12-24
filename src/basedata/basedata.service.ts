@@ -25,17 +25,37 @@ export class BasedataService {
   async create (createBasedatumDto: CreateBasedatumDto) {
     console.log('Creating....')
     const devices = await this.deviceModel.find()
-    devices.map(el => {
+    for (let i = 0; i < devices.length; i++) {
+      const element = devices[i]
       const date_in_ms = new Date().getTime()
-      return this.basedataModel.create({
+      const { _id } = await this.basedataModel.create({
         level: gRN(5, 59),
         volume: gRN(0.1, 1.2),
         salinity: gRN(1, 10),
-        device: el._id,
+        device: element._id,
         signal: 'good',
         date_in_ms,
       })
-    })
+      this.serverData.create({
+        basedata: _id,
+        device_privet_key: element.device_privet_key,
+        message: 'Yaxshi.',
+        send_data_in_ms: date_in_ms,
+        status_code: 200,
+      })
+      console.log("Created server data...");
+    }
+    // devices.map(el => {
+    // const {_id} = await    this.basedataModel.create({
+    //     level: gRN(5, 59),
+    //     volume: gRN(0.1, 1.2),
+    //     salinity: gRN(1, 10),
+    //     device: el._id,
+    //     signal: 'good',
+    //     date_in_ms,
+    //   })
+
+    // })
   }
 
   // ! Barcha ma'lumotlarni olish uchun

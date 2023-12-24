@@ -12,7 +12,6 @@ export class Serverdata {
   @Prop({
     type: String,
     required: true,
-    unique: true,
   })
   device_privet_key: string
 

@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common'
 import { RegionsService } from './regions.service'
 import { CreateRegionDto } from './dto/create-region.dto'
 import { UpdateRegionDto } from './dto/update-region.dto'
+import { QueryDto } from 'src/_shared/query.dto'
 
 @Controller('regions')
 export class RegionsController {
@@ -21,8 +23,8 @@ export class RegionsController {
   }
 
   @Get()
-  findAll() {
-    return this.regionsService.findAll()
+  findAll(@Query() query : QueryDto) {
+    return this.regionsService.findAll(query)
   }
 
   @Get(':id')

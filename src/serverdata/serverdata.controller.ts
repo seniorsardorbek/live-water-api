@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common'
 import { ServerdataService } from './serverdata.service'
 import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
 import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
+import { QueryDto } from 'src/_shared/query.dto'
 
 @Controller('serverdata')
 export class ServerdataController {
@@ -21,13 +23,13 @@ export class ServerdataController {
   }
 
   @Get()
-  findAll() {
-    return this.serverdataService.findAll()
+  findAll(@Query() query : QueryDto) {
+    return this.serverdataService.findAll(query)
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.serverdataService.findOne(+id)
+    return this.serverdataService.findOne(id)
   }
 
   @Patch(':id')
@@ -35,11 +37,11 @@ export class ServerdataController {
     @Param('id') id: string,
     @Body() updateServerdatumDto: UpdateServerdatumDto
   ) {
-    return this.serverdataService.update(+id, updateServerdatumDto)
+    return this.serverdataService.update(id, updateServerdatumDto)
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.serverdataService.remove(+id)
+    return this.serverdataService.remove(id)
   }
 }

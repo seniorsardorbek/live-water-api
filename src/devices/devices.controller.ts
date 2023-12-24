@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common'
 import { DevicesService } from './devices.service'
 import { CreateDeviceDto } from './dto/create-device.dto'
 import { UpdateDeviceDto } from './dto/update-device.dto'
+import { QueryDto } from 'src/_shared/query.dto'
 
 @Controller('devices')
 export class DevicesController {
@@ -21,8 +23,8 @@ export class DevicesController {
   }
 
   @Get()
-  findAll() {
-    return this.devicesService.findAll()
+  findAll(@Query() query : QueryDto) {
+    return this.devicesService.findAll(query)
   }
 
   @Get(':id')
