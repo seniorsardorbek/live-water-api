@@ -15,17 +15,17 @@ import { Serverdata } from 'src/serverdata/Schema/Serverdata'
 
 @Injectable()
 export class BasedataService {
-  constructor(
+  constructor (
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     @InjectModel(Serverdata.name) private serverData: Model<Serverdata>,
     private readonly serverDataService: ServerdataService
   ) {}
   @Cron(CronExpression.EVERY_HOUR)
-  async create(createBasedatumDto: CreateBasedatumDto) {
+  async create (createBasedatumDto: CreateBasedatumDto) {
     console.log('Creating....')
     const devices = await this.deviceModel.find()
-    devices.map((el) => {
+    devices.map(el => {
       const date_in_ms = new Date().getTime()
       return this.basedataModel.create({
         level: gRN(5, 59),
@@ -39,7 +39,7 @@ export class BasedataService {
   }
 
   // ! Barcha ma'lumotlarni olish uchun
-  async findAll({
+  async findAll ({
     page,
     filter,
     sort,
@@ -58,7 +58,7 @@ export class BasedataService {
   }
 
   //! Bitta qurilma ma'lumotlarini olish uchun
-  async findOneDevice(
+  async findOneDevice (
     { page }: QueryDto,
     id: string
   ): Promise<PaginationResponse<Basedata>> {
@@ -74,12 +74,12 @@ export class BasedataService {
   }
 
   //! Bitta malumotni olish uchun
-  findOne(id: string) {
+  findOne (id: string) {
     return this.basedataModel.findById(id)
   }
 
   // ! Bitta mal'lumotni yangilash uchun
-  async update(id: string, updateBasedatumDto: UpdateBasedatumDto) {
+  async update (id: string, updateBasedatumDto: UpdateBasedatumDto) {
     const updated = await this.basedataModel.findByIdAndUpdate(
       id,
       updateBasedatumDto,
@@ -93,7 +93,7 @@ export class BasedataService {
   }
 
   //! Bitta mal'lumotni o'chirish uchun
-  async remove(id: string) {
+  async remove (id: string) {
     const removed = await this.basedataModel.findByIdAndDelete(id, {
       new: true,
     })

@@ -10,13 +10,13 @@ import { QueryDto } from 'src/_shared/query.dto'
 const saltOrRounds = 12
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-  async create(data: CreateUserDto) {
+  constructor (@InjectModel(User.name) private userModel: Model<User>) {}
+  async create (data: CreateUserDto) {
     data.password = await bcrypt.hash(data.password, saltOrRounds)
     return this.userModel.create(data)
   }
 
-  async findAll({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
+  async findAll ({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
     const { limit = 10, offset = 0 } = page || {}
     const search = q
       ? {
@@ -38,14 +38,14 @@ export class UsersService {
     return { data, limit, offset, total }
   }
 
-  findOne(id: string) {
+  findOne (id: string) {
     return this.userModel
       .findById(id)
       .populate([{ path: 'devices', select: 'port serie ip_address -owner' }])
       .select('-password')
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update (id: string, updateUserDto: UpdateUserDto) {
     if (updateUserDto.password) {
       updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10)
     }
@@ -59,7 +59,7 @@ export class UsersService {
     }
   }
 
-  async remove(id: string) {
+  async remove (id: string) {
     const removed = await this.userModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })
