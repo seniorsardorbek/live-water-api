@@ -1,10 +1,10 @@
 export enum UserRole {
   ADMIN = 'admin',
-  OPERATOR = 'operator'
+  OPERATOR = 'operator',
 }
 export enum Status {
   GOOD = 'good',
-  NOSIGNAL = 'nosignal'
+  NOSIGNAL = 'nosignal',
 }
 
 export enum SortOrder {

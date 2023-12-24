@@ -1,30 +1,28 @@
-import { IsMongoId, IsNumber, IsString } from "class-validator";
-import { ObjectId } from "mongoose";
+import { IsMongoId, IsNumber, IsString } from 'class-validator'
+import { ObjectId } from 'mongoose'
 
 export class CreateDeviceDto {
-    @IsString()
-    serie: string
+  @IsString()
+  serie: string
 
-    @IsString()
-    device_privet_key: string
+  @IsString()
+  device_privet_key: string
 
-    @IsString()
-    ip_address: string
-    
-    @IsNumber()
-    port: number
+  @IsString()
+  ip_address: string
 
-    @IsNumber()
-    lat: number
+  @IsNumber()
+  port: number
 
-    @IsNumber()
-    long: number
+  @IsNumber()
+  lat: number
 
-    @IsMongoId()
-    region: ObjectId
+  @IsNumber()
+  long: number
 
+  @IsMongoId()
+  region: ObjectId
 
-    @IsMongoId()
-    owner: ObjectId
-
+  @IsMongoId()
+  owner: ObjectId
 }
