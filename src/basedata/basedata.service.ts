@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Res } from '@nestjs/common'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
 import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 import { InjectModel } from '@nestjs/mongoose'
@@ -8,10 +8,12 @@ import { QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
 import { Device } from 'src/devices/Schema/Device'
-import { gRN } from 'src/_shared/utils'
+import { formatTimestamp, gRN } from 'src/_shared/utils'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { ServerdataService } from 'src/serverdata/serverdata.service'
 import { Serverdata } from 'src/serverdata/Schema/Serverdata'
+import * as XLSX from 'xlsx'
+import { Response } from 'express'
 
 @Injectable()
 export class BasedataService {
@@ -43,7 +45,7 @@ export class BasedataService {
         send_data_in_ms: date_in_ms,
         status_code: 200,
       })
-      console.log("Created server data...");
+      console.log('Created server data...')
     }
     // devices.map(el => {
     // const {_id} = await    this.basedataModel.create({
@@ -65,16 +67,41 @@ export class BasedataService {
     sort,
   }: BasedataQueryDto): Promise<PaginationResponse<Basedata>> {
     const { limit = 10, offset = 0 } = page || {}
-    const { by, order = 'desc' } = sort || {}
-    const total = await this.basedataModel.find({ ...filter }).countDocuments()
+    const { by = 'created_at', order = 'desc' } = sort || {}
+    const { start, end, device } = filter || {}
+    const query: any = {}
+    if (start) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$gte = start
+    }
+
+    if (end) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$lte = end
+    }
+    if (device) {
+      query.device = device
+    }
+    const total = await this.basedataModel.find({ ...query }).countDocuments()
 
     const data = await this.basedataModel
-      .find({ ...filter })
+      .find({ ...query })
       .sort({ [by]: order === 'desc' ? -1 : 1 })
-      // .populate([{ path: 'device', select: 'port serie ip_address ' }])
+      .populate([{ path: 'device', select: 'port serie ip_address ' }])
       .limit(limit)
       .skip(limit * offset)
     return { data, limit, offset, total }
+  }
+  async lastData ({ page }: QueryDto) {
+    const { limit = 10, offset = 0 } = page || {}
+    const devices = await this.deviceModel.find().countDocuments()
+    const data = this.basedataModel
+      .find()
+      .sort({ created_at: -1 })
+      .limit(devices)
+      .limit(limit)
+      .skip(limit * offset)
+    return data
   }
 
   //! Bitta qurilma ma'lumotlarini olish uchun
@@ -122,5 +149,46 @@ export class BasedataService {
     } else {
       return { msg: "O'chirilsihda xatolik!" }
     }
+  }
+  async exe ({  page,
+    filter,
+    sort,
+  }: BasedataQueryDto , @Res() res : Response){
+    const { limit = 10, offset = 0 } = page || {}
+    const { by = 'created_at', order = 'desc' } = sort || {}
+    const { start, end, device } = filter || {}
+    const query: any = {}
+
+    // Check if the timestamp field exists before applying filtering conditions
+    if (start) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$gte = start
+    }
+
+    if (end) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$lte = end
+    }
+    if (device) {
+      query.device = device
+    }
+    const data = await this.basedataModel.find({...query}).exec() // Fetch data from MongoDB
+    const jsonData = data.map((item: any) => {
+      const obj = item.toObject()
+      obj._id = item._id.toString()
+      obj.device = item.device.toString()
+      obj.date_in_ms = formatTimestamp(item.date_in_ms)
+      return obj
+    })
+    const ws = XLSX.utils.json_to_sheet(jsonData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'DataSheet')
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' })
+    res.setHeader('Content-Disposition', 'attachment; filename=data.xlsx')
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.send(excelBuffer)
   }
 }

@@ -7,11 +7,14 @@ import {
   Param,
   Delete,
   Query,
+  Res,
 } from '@nestjs/common'
 import { BasedataService } from './basedata.service'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
 import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 import { QueryDto } from 'src/_shared/query.dto'
+import { BasedataQueryDto } from './dto/basedata.query.dto'
+import { Response } from 'express'
 
 @Controller('basedata')
 export class BasedataController {
@@ -23,8 +26,17 @@ export class BasedataController {
   }
   // !
   @Get()
-  findAll(@Query() query: QueryDto) {
+  findAll(@Query() query: BasedataQueryDto) {
     return this.basedataService.findAll(query)
+  }
+  // !
+  @Get("exe")
+  async exportToExcel(@Res() res: Response , @Query() query: BasedataQueryDto){
+    return this.basedataService.exe( query, res );
+  }
+  @Get('last-updated')
+  lastData(@Query() query: QueryDto) {
+    return this.basedataService.lastData(query)
   }
   // !
   @Get('device/:id')

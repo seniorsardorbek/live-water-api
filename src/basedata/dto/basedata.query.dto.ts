@@ -8,6 +8,7 @@ import {
   IsIn,
   IsObject,
   IsBoolean,
+  IsNumber,
 } from 'class-validator'
 import { SortOrder } from 'src/_shared/enums'
 import { Paginate } from 'src/_shared/query.dto'
@@ -22,9 +23,19 @@ class Sort {
 }
 
 class Filter {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   device: string
+  
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  start: number
+
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  end: number
 }
 
 export class BasedataQueryDto {

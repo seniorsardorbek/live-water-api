@@ -35,7 +35,7 @@ export class Basedata {
     enum: Status,
     required: true,
   })
-  signal: number
+  signal: string
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

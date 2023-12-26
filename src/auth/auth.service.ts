@@ -27,6 +27,6 @@ export class AuthService {
     const token = this.jwtService.sign({
       user: { id: existing._id, role: existing.role },
     })
-    return { msg: 'Muvaffaqqiyatli kirdingiz!', token }
+    return { msg: 'Muvaffaqqiyatli kirdingiz!', token , data : existing }
   }
 }

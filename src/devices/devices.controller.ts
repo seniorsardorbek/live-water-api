@@ -12,6 +12,7 @@ import { DevicesService } from './devices.service'
 import { CreateDeviceDto } from './dto/create-device.dto'
 import { UpdateDeviceDto } from './dto/update-device.dto'
 import { QueryDto } from 'src/_shared/query.dto'
+import { DeviceQueryDto } from './dto/device.query.dto'
 
 @Controller('devices')
 export class DevicesController {
@@ -27,7 +28,11 @@ export class DevicesController {
     return this.devicesService.findAll(query)
   }
 
-  @Get(':id')
+  @Get('/reg')
+  regionAll(@Query() query : DeviceQueryDto) {
+    return this.devicesService.regionAll(  query)
+  }
+  @Get('/:id')
   findOne(@Param('id') id: string) {
     return this.devicesService.findOne(id)
   }

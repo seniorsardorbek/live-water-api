@@ -6,6 +6,7 @@ import { Device } from './Schema/Device'
 import { Model } from 'mongoose'
 import { QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
+import { DeviceQueryDto } from './dto/device.query.dto'
 
 @Injectable()
 export class DevicesService {
@@ -23,8 +24,18 @@ export class DevicesService {
       .find()
       .populate([
         { path: 'region', select: 'name' },
-        { path: 'owner', select: 'username first_name last_name' },
+        { path: 'owner', select: 'username first_name last_name -password' },
       ])
+      .limit(limit)
+      .skip(limit * offset)
+    return { data, limit, offset, total }
+  }
+  async regionAll (   { page , filter }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
+    console.log(filter);
+    const { limit = 10, offset = 0 } = page || {}
+    const total = await this.deviceModel.find().countDocuments()
+    const data = await this.deviceModel
+      .find(filter)
       .limit(limit)
       .skip(limit * offset)
     return { data, limit, offset, total }
