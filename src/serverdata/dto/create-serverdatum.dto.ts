@@ -8,11 +8,11 @@ export class CreateServerdatumDto {
   @IsString()
   device_privet_key: string
 
-  @IsString()
-  basedata: string
+  @IsMongoId()
+  basedata: ObjectId
 
-  @IsString()
-  send_data_in_ms: string
+  @IsNumber()
+  send_data_in_ms: number
 
   @IsNumber()
   status_code: number

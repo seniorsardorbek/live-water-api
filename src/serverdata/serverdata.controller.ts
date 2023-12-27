@@ -7,11 +7,14 @@ import {
   Param,
   Delete,
   Query,
+  Res,
 } from '@nestjs/common'
 import { ServerdataService } from './serverdata.service'
 import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
 import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
 import { QueryDto } from 'src/_shared/query.dto'
+import { Response } from 'express'
+import { ServerdataQueryDto } from './dto/serverdata.query.dto'
 
 @Controller('serverdata')
 export class ServerdataController {
@@ -43,5 +46,9 @@ export class ServerdataController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.serverdataService.remove(id)
+  }
+  @Get("xlsx")
+  async exportToExcel(@Res() res: Response , @Query() query: ServerdataQueryDto){
+    return this.serverdataService.xlsx( query, res );
   }
 }

@@ -23,10 +23,10 @@ export class Serverdata {
   basedata: ObjectId
 
   @Prop({
-    type: String,
+    type: Number,
     required: true,
   })
-  send_data_in_ms: string
+  send_data_in_ms: number
 
   @Prop({
     type: Number,

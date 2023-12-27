@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, Res } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Serverdata } from './Schema/Serverdata'
@@ -6,6 +6,10 @@ import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
 import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
 import { QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
+import { ServerdataQueryDto } from './dto/serverdata.query.dto'
+import { Response } from 'express'
+import { formatTimestamp } from 'src/_shared/utils'
+import * as XLSX from 'xlsx'
 
 @Injectable()
 export class ServerdataService {
@@ -17,17 +21,14 @@ export class ServerdataService {
     return this.serverdataModel.create(createServerdatumDto)
   }
 
-  async findAll({ page }: QueryDto): Promise<PaginationResponse<Serverdata>> {
-    const { limit = 10, offset = 0 } = page || {};
-  
+  async findAll ({ page }: QueryDto): Promise<PaginationResponse<Serverdata>> {
+    const { limit = 10, offset = 0 } = page || {}
+
     const [result] = await this.serverdataModel
       .aggregate([
         {
           $facet: {
-            data: [
-              { $skip: limit * offset },
-              { $limit: limit },
-            ],
+            data: [{ $skip: limit * offset }, { $limit: limit }],
             total: [
               {
                 $count: 'count',
@@ -42,18 +43,18 @@ export class ServerdataService {
           },
         },
       ])
-      .exec();
-  
-    const { data, total } = result;
-  
-    return { data, limit, offset, total };
-  }
-  
-  findOne (id: string) {
-    return this.serverdataModel.findById(id).populate('basedata');
+      .exec()
+
+    const { data, total } = result
+
+    return { data, limit, offset, total }
   }
 
- async update (id: string, updateServerdatumDto: UpdateServerdatumDto) {
+  findOne (id: string) {
+    return this.serverdataModel.findById(id).populate('basedata')
+  }
+
+  async update (id: string, updateServerdatumDto: UpdateServerdatumDto) {
     const updated = await this.serverdataModel.findByIdAndUpdate(
       id,
       updateServerdatumDto,
@@ -73,5 +74,40 @@ export class ServerdataService {
     } else {
       return { msg: "Muvaffaqqiyatli o'chirildi." }
     }
+  }
+
+  async xlsx ({ filter }: ServerdataQueryDto, @Res() res: Response) {
+    const { start, end, device } = filter || {}
+    const query: any = {}
+    if (start) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$gte = start
+    }
+
+    if (end) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$lte = end
+    }
+    if (device) {
+      query.device = device
+    }
+    const data = await this.serverdataModel.find({ ...query }).exec() // Fetch data from MongoDB
+    const jsonData = data.map((item: any) => {
+      const obj = item.toObject()
+      obj._id = item._id.toString()
+      obj.device = item.device.toString()
+      obj.date_in_ms = formatTimestamp(item.date_in_ms)
+      return obj
+    })
+    const ws = XLSX.utils.json_to_sheet(jsonData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'DataSheet')
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' })
+    res.setHeader('Content-Disposition', 'attachment; filename=basedata.xlsx')
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    res.send(excelBuffer)
   }
 }

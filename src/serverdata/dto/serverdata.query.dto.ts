@@ -18,7 +18,7 @@ class Sort {
   order: SortOrder
 
   @IsNotEmpty()
-  @IsIn(['level', 'salnity', 'volume', 'created_at', 'updated_at'])
+  @IsIn(['status', 'send_data_in_ms', 'volume'])
   by: string
 }
 
@@ -38,7 +38,7 @@ class Filter {
   end: number
 }
 
-export class BasedataQueryDto {
+export class ServerdataQueryDto {
   @IsOptional()
   @IsObject()
   @ValidateNested()

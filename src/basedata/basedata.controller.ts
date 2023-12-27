@@ -30,9 +30,9 @@ export class BasedataController {
     return this.basedataService.findAll(query)
   }
   // !
-  @Get("exe")
+  @Get("xlsx")
   async exportToExcel(@Res() res: Response , @Query() query: BasedataQueryDto){
-    return this.basedataService.exe( query, res );
+    return this.basedataService.xlsx( query, res );
   }
   @Get('last-updated')
   lastData(@Query() query: QueryDto) {

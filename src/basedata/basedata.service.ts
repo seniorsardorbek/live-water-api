@@ -41,7 +41,7 @@ export class BasedataService {
       this.serverData.create({
         basedata: _id,
         device_privet_key: element.device_privet_key,
-        message: 'Yaxshi.',
+        message: 'Yomon.',
         send_data_in_ms: date_in_ms,
         status_code: 200,
       })
@@ -74,7 +74,6 @@ export class BasedataService {
       query.date_in_ms = query.date_in_ms || {}
       query.date_in_ms.$gte = start
     }
-
     if (end) {
       query.date_in_ms = query.date_in_ms || {}
       query.date_in_ms.$lte = end
@@ -83,7 +82,6 @@ export class BasedataService {
       query.device = device
     }
     const total = await this.basedataModel.find({ ...query }).countDocuments()
-
     const data = await this.basedataModel
       .find({ ...query })
       .sort({ [by]: order === 'desc' ? -1 : 1 })
@@ -92,6 +90,7 @@ export class BasedataService {
       .skip(limit * offset)
     return { data, limit, offset, total }
   }
+
   async lastData ({ page }: QueryDto) {
     const { limit = 10, offset = 0 } = page || {}
     const devices = await this.deviceModel.find().countDocuments()
@@ -150,16 +149,9 @@ export class BasedataService {
       return { msg: "O'chirilsihda xatolik!" }
     }
   }
-  async exe ({  page,
-    filter,
-    sort,
-  }: BasedataQueryDto , @Res() res : Response){
-    const { limit = 10, offset = 0 } = page || {}
-    const { by = 'created_at', order = 'desc' } = sort || {}
+  async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}
-
-    // Check if the timestamp field exists before applying filtering conditions
     if (start) {
       query.date_in_ms = query.date_in_ms || {}
       query.date_in_ms.$gte = start
@@ -172,7 +164,7 @@ export class BasedataService {
     if (device) {
       query.device = device
     }
-    const data = await this.basedataModel.find({...query}).exec() // Fetch data from MongoDB
+    const data = await this.basedataModel.find({ ...query }).exec() // Fetch data from MongoDB
     const jsonData = data.map((item: any) => {
       const obj = item.toObject()
       obj._id = item._id.toString()
@@ -184,7 +176,7 @@ export class BasedataService {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'DataSheet')
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' })
-    res.setHeader('Content-Disposition', 'attachment; filename=data.xlsx')
+    res.setHeader('Content-Disposition', 'attachment; filename=basedata.xlsx')
     res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
