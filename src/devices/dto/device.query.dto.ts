@@ -1,18 +1,16 @@
-import { Transform, Type } from 'class-transformer'
+import { Type } from 'class-transformer'
 import {
-  IsInt,
-  IsNumber,
+  IsMongoId,
   IsObject,
   IsOptional,
-  IsString,
-  Min,
-  ValidateNested,
+  ValidateNested
 } from 'class-validator'
+import { ObjectId } from 'mongoose'
 import { Paginate } from 'src/_shared/query.dto'
 class Filter {
   @IsOptional()
-  @IsString()
-  region: string
+  @IsMongoId()
+  region: ObjectId
 }
 
 export class DeviceQueryDto {

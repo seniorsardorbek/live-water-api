@@ -30,8 +30,8 @@ export class DevicesService {
       .skip(limit * offset)
     return { data, limit, offset, total }
   }
-  async regionAll (   { page , filter }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
-    console.log(filter);
+
+  async regionAll ({ page , filter }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
     const { limit = 10, offset = 0 } = page || {}
     const total = await this.deviceModel.find().countDocuments()
     const data = await this.deviceModel
