@@ -25,7 +25,6 @@ export class BasedataService {
   ) {}
   @Cron(CronExpression.EVERY_HOUR)
   async create (createBasedatumDto: CreateBasedatumDto) {
-    console.log('Creating....')
     const devices = await this.deviceModel.find()
     for (let i = 0; i < devices.length; i++) {
       const element = devices[i]
@@ -45,19 +44,8 @@ export class BasedataService {
         send_data_in_ms: date_in_ms,
         status_code: 200,
       })
-      console.log('Created server data...')
     }
-    // devices.map(el => {
-    // const {_id} = await    this.basedataModel.create({
-    //     level: gRN(5, 59),
-    //     volume: gRN(0.1, 1.2),
-    //     salinity: gRN(1, 10),
-    //     device: el._id,
-    //     signal: 'good',
-    //     date_in_ms,
-    //   })
-
-    // })
+    return {msg : "Malumotlar simulation holatda"}
   }
 
   // ! Barcha ma'lumotlarni olish uchun
@@ -149,6 +137,7 @@ export class BasedataService {
       return { msg: "O'chirilsihda xatolik!" }
     }
   }
+  
   async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}

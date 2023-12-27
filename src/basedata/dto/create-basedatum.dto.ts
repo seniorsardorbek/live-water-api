@@ -16,7 +16,6 @@ export class CreateBasedatumDto {
   salinity: number
 
   @IsNumber()
-  @IsOptional()
   date_in_ms?: number
 
   @IsEnum(Status)
