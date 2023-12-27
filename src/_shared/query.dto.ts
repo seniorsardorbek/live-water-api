@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer'
 import {
   IsInt,
+  IsMongoId,
   IsObject,
   IsOptional,
   IsString,
@@ -32,4 +33,9 @@ export class QueryDto {
   @IsOptional()
   @IsString()
   q?: string
+}
+
+export class ParamIdDto {
+  @IsMongoId()
+  id: string;
 }

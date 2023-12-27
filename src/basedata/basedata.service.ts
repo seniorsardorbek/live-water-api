@@ -4,7 +4,7 @@ import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { Basedata } from './Schema/Basedatas'
 import { Model } from 'mongoose'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
 import { Device } from 'src/devices/Schema/Device'
@@ -106,7 +106,7 @@ export class BasedataService {
   //! Bitta qurilma ma'lumotlarini olish uchun
   async findOneDevice (
     { page }: QueryDto,
-    id: string
+    { id }: ParamIdDto
   ): Promise<PaginationResponse<Basedata>> {
     const { limit = 10, offset = 0 } = page || {}
 
@@ -120,12 +120,12 @@ export class BasedataService {
   }
 
   //! Bitta malumotni olish uchun
-  findOne (id: string) {
+  findOne ({ id }: ParamIdDto) {
     return this.basedataModel.findById(id)
   }
 
   // ! Bitta mal'lumotni yangilash uchun
-  async update (id: string, updateBasedatumDto: UpdateBasedatumDto) {
+  async update ({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
     const updated = await this.basedataModel.findByIdAndUpdate(
       id,
       updateBasedatumDto,
@@ -139,7 +139,7 @@ export class BasedataService {
   }
 
   //! Bitta mal'lumotni o'chirish uchun
-  async remove (id: string) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.basedataModel.findByIdAndDelete(id, {
       new: true,
     })

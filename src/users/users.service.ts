@@ -3,10 +3,10 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { User } from './Schema/Users'
-import { Model } from 'mongoose'
+import { Model, ObjectId } from 'mongoose'
 import * as bcrypt from 'bcryptjs'
 import { PaginationResponse } from 'src/_shared/response'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 const saltOrRounds = 12
 @Injectable()
 export class UsersService {
@@ -38,14 +38,15 @@ export class UsersService {
     return { data, limit, offset, total }
   }
 
-  findOne (id: string) {
-    return this.userModel
+  findOne ({ id }: ParamIdDto) {
+    const user = this.userModel
       .findById(id)
       .populate([{ path: 'devices', select: 'port serie ip_address -owner' }])
       .select('-password')
+    return user
   }
 
-  async update (id: string, updateUserDto: UpdateUserDto) {
+  async update ({ id }: ParamIdDto, updateUserDto: UpdateUserDto) {
     if (updateUserDto.password) {
       updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10)
     }
@@ -59,7 +60,7 @@ export class UsersService {
     }
   }
 
-  async remove (id: string) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.userModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })

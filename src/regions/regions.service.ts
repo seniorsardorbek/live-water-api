@@ -5,7 +5,7 @@ import { Model, ObjectId } from 'mongoose'
 import { Region } from './Schema/Regions'
 import { InjectModel } from '@nestjs/mongoose'
 import { Device } from 'src/devices/Schema/Device'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
 
 @Injectable()
@@ -41,14 +41,14 @@ export class RegionsService {
     return { data, limit, offset, total }
   }
 
-  async findOne (id: string) {
+  async findOne ({ id }: ParamIdDto) {
     const regionWithDevices = await this.regionModel
       .findById(id)
       .populate('devicesCount')
     return regionWithDevices
   }
 
-  async update (id: string, updateRegionDto: UpdateRegionDto) {
+  async update ({ id }: ParamIdDto, updateRegionDto: UpdateRegionDto) {
     const updated = await this.regionModel.findByIdAndUpdate(
       id,
       updateRegionDto,
@@ -61,7 +61,7 @@ export class RegionsService {
     }
   }
 
-  async remove (id: string) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.regionModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Hudud mavjud emas.' })

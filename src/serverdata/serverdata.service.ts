@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 import { Serverdata } from './Schema/Serverdata'
 import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
 import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
 import { ServerdataQueryDto } from './dto/serverdata.query.dto'
 import { Response } from 'express'
@@ -50,11 +50,11 @@ export class ServerdataService {
     return { data, limit, offset, total }
   }
 
-  findOne (id: string) {
+  findOne ({ id }: ParamIdDto) {
     return this.serverdataModel.findById(id).populate('basedata')
   }
 
-  async update (id: string, updateServerdatumDto: UpdateServerdatumDto) {
+  async update ({ id }: ParamIdDto, updateServerdatumDto: UpdateServerdatumDto) {
     const updated = await this.serverdataModel.findByIdAndUpdate(
       id,
       updateServerdatumDto,
@@ -67,7 +67,7 @@ export class ServerdataService {
     }
   }
 
-  async remove (id: string) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.serverdataModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })

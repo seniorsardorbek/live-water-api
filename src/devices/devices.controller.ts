@@ -7,11 +7,12 @@ import {
   Param,
   Delete,
   Query,
+  ValidationPipe,
 } from '@nestjs/common'
 import { DevicesService } from './devices.service'
 import { CreateDeviceDto } from './dto/create-device.dto'
 import { UpdateDeviceDto } from './dto/update-device.dto'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { DeviceQueryDto } from './dto/device.query.dto'
 
 @Controller('devices')
@@ -33,17 +34,17 @@ export class DevicesController {
     return this.devicesService.regionAll(  query)
   }
   @Get('/:id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param(ValidationPipe) id: ParamIdDto) {
     return this.devicesService.findOne(id)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDeviceDto: UpdateDeviceDto) {
+  update(@Param(ValidationPipe) id: ParamIdDto, @Body() updateDeviceDto: UpdateDeviceDto) {
     return this.devicesService.update(id, updateDeviceDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param(ValidationPipe) id: ParamIdDto) {
     return this.devicesService.remove(id)
   }
 }

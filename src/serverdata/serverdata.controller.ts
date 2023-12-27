@@ -8,11 +8,12 @@ import {
   Delete,
   Query,
   Res,
+  ValidationPipe,
 } from '@nestjs/common'
 import { ServerdataService } from './serverdata.service'
 import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
 import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { Response } from 'express'
 import { ServerdataQueryDto } from './dto/serverdata.query.dto'
 
@@ -31,20 +32,20 @@ export class ServerdataController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param(ValidationPipe) id: ParamIdDto) {
     return this.serverdataService.findOne(id)
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param(ValidationPipe) id: ParamIdDto,
     @Body() updateServerdatumDto: UpdateServerdatumDto
   ) {
     return this.serverdataService.update(id, updateServerdatumDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param(ValidationPipe) id: ParamIdDto) {
     return this.serverdataService.remove(id)
   }
   @Get("xlsx")

@@ -8,11 +8,12 @@ import {
   Delete,
   Query,
   Res,
+  ValidationPipe,
 } from '@nestjs/common'
 import { BasedataService } from './basedata.service'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
 import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
 import { Response } from 'express'
 
@@ -40,25 +41,25 @@ export class BasedataController {
   }
   // !
   @Get('device/:id')
-  findOneDevice(@Param('id') id: string, @Query() query: QueryDto) {
+  findOneDevice(@Param(ValidationPipe) id: ParamIdDto, @Query() query: QueryDto) {
     return this.basedataService.findOneDevice(query, id)
   }
   // !
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param(ValidationPipe) id: ParamIdDto) {
     return this.basedataService.findOne(id)
   }
   // !
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param(ValidationPipe) id: ParamIdDto,
     @Body() updateBasedatumDto: UpdateBasedatumDto
   ) {
     return this.basedataService.update(id, updateBasedatumDto)
   }
   // !
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param(ValidationPipe) id: ParamIdDto) {
     return this.basedataService.remove(id)
   }
 }

@@ -4,7 +4,7 @@ import { UpdateDeviceDto } from './dto/update-device.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { Device } from './Schema/Device'
 import { Model } from 'mongoose'
-import { QueryDto } from 'src/_shared/query.dto'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
 import { DeviceQueryDto } from './dto/device.query.dto'
 
@@ -41,14 +41,14 @@ export class DevicesService {
     return { data, limit, offset, total }
   }
 
-  findOne (id: string) {
+  findOne ({ id }: ParamIdDto) {
     return this.deviceModel.findById(id).populate([
       { path: 'region', select: 'name' },
       { path: 'owner', select: 'username first_name last_name' },
     ])
   }
 
-  async update (id: string, updateDeviceDto: UpdateDeviceDto) {
+  async update ({ id }: ParamIdDto, updateDeviceDto: UpdateDeviceDto) {
     const updated = await this.deviceModel.findByIdAndUpdate(
       id,
       updateDeviceDto,
@@ -61,7 +61,7 @@ export class DevicesService {
     }
   }
 
-  async remove (id: string) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.deviceModel.findByIdAndDelete(id, { new: true })
     if (removed) {
       return { msg: "Qurilma o'chirildi." }
