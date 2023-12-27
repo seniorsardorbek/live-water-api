@@ -12,6 +12,10 @@ const saltOrRounds = 12
 export class UsersService {
   constructor (@InjectModel(User.name) private userModel: Model<User>) {}
   async create (data: CreateUserDto) {
+    const username = this.userModel.findOne({username : data.username})
+    if(username){
+       throw new BadRequestException({msg: "Username allqachon foydalanilgan"})
+    }
     data.password = await bcrypt.hash(data.password, saltOrRounds)
     return this.userModel.create(data)
   }
