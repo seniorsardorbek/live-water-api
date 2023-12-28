@@ -7,8 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator'
-import { ObjectId, isObjectIdOrHexString } from 'mongoose'
-import { title } from 'process'
+import { ObjectId } from 'mongoose'
 import { UserRole } from 'src/_shared/enums'
 
 export class CreateUserDto {

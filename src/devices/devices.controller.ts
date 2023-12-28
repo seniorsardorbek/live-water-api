@@ -14,8 +14,10 @@ import { CreateDeviceDto } from './dto/create-device.dto'
 import { UpdateDeviceDto } from './dto/update-device.dto'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { DeviceQueryDto } from './dto/device.query.dto'
+import { ApiTags } from '@nestjs/swagger'
 
 @Controller('devices')
+@ApiTags('Device')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 

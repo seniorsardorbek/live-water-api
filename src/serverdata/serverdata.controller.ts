@@ -16,8 +16,12 @@ import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { Response } from 'express'
 import { ServerdataQueryDto } from './dto/serverdata.query.dto'
+import { ApiTags } from '@nestjs/swagger'
+
+
 
 @Controller('serverdata')
+@ApiTags('Serverdata')
 export class ServerdataController {
   constructor(private readonly serverdataService: ServerdataService) {}
 

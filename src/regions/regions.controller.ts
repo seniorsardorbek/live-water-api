@@ -13,8 +13,10 @@ import { RegionsService } from './regions.service'
 import { CreateRegionDto } from './dto/create-region.dto'
 import { UpdateRegionDto } from './dto/update-region.dto'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
+import { ApiTags } from '@nestjs/swagger'
 
 @Controller('regions')
+@ApiTags("Regions")
 export class RegionsController {
   constructor(private readonly regionsService: RegionsService) {}
 

@@ -37,6 +37,7 @@ export class UsersController {
 
   // @SetRoles('super_admin', 'admin')
   // @UseGuards(IsLoggedIn, HasRole)
+
   @Get()
   findAll(@Query() query: QueryDto) {
     return this.usersService.findAll(query)
