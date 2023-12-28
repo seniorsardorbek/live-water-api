@@ -18,12 +18,19 @@ import { SetRoles } from 'src/auth/set-roles.decorator'
 import { IsLoggedIn } from 'src/auth/is-loggin.guard'
 import { HasRole } from 'src/auth/has-roles.guard'
 import { ObjectId } from 'mongoose'
+import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { User } from './Schema/Users'
 
 @Controller('users')
+@ApiTags("Users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @ApiCreatedResponse({
+    description: 'The record has been successfully created.',
+    type: User,
+  })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto)
   }
