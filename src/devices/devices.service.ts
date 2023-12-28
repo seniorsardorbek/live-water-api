@@ -11,7 +11,11 @@ import { DeviceQueryDto } from './dto/device.query.dto'
 @Injectable()
 export class DevicesService {
   constructor (@InjectModel(Device.name) private deviceModel: Model<Device>) {}
-  create (createDeviceDto: CreateDeviceDto) {
+ async create (createDeviceDto: CreateDeviceDto) {
+    const existKey = await  this.deviceModel.findOne({device_privet_key :  createDeviceDto.device_privet_key})
+    if(existKey){
+      throw new BadRequestException({msg :"Device private key  already exists!"})
+    }
     return this.deviceModel.create(createDeviceDto)
   }
 
