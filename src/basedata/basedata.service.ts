@@ -45,7 +45,7 @@ export class BasedataService {
         status_code: 200,
       })
     }
-    return {msg : "Malumotlar simulation holatda"}
+    return { msg: 'Malumotlar simulation holatda' }
   }
 
   // ! Barcha ma'lumotlarni olish uchun
@@ -81,13 +81,12 @@ export class BasedataService {
 
   async lastData ({ page }: QueryDto) {
     const { limit = 10, offset = 0 } = page || {}
-    const devices = await this.deviceModel.find().countDocuments()
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); // Subtract one hour from the current time
+
     const data = this.basedataModel
-      .find()
-      .sort({ created_at: -1 })
-      .limit(devices)
-      .limit(limit)
-      .skip(limit * offset)
+    .find({
+      createdAt: { $gte: oneHourAgo },
+    }).exec();
     return data
   }
 
@@ -137,7 +136,7 @@ export class BasedataService {
       return { msg: "O'chirilsihda xatolik!" }
     }
   }
-  
+
   async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}
