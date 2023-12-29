@@ -24,5 +24,5 @@ RegionSchema.virtual('devicesCount', {
   count: true,
 })
 
-// RegionSchema.set('toObject', { virtuals: true });
+RegionSchema.set('toObject', { virtuals: true });
 RegionSchema.set('toJSON', { virtuals: true })

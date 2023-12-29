@@ -17,27 +17,15 @@ export class RegionsService {
 
   async findAll ({ page }: QueryDto): Promise<PaginationResponse<Region>> {
     const { limit = 10, offset = 0 } = page || {}
-    const [result] = await this.regionModel
-      .aggregate([
-        {
-          $facet: {
-            data: [{ $skip: limit * offset }, { $limit: limit }],
-            total: [
-              {
-                $count: 'count',
-              },
-            ],
-          },
-        },
-        {
-          $project: {
-            data: 1,
-            total: { $arrayElemAt: ['$total.count', 0] },
-          },
-        },
-      ])
-      .exec()
-    const { data, total } = result
+    const total = await this.regionModel.find().countDocuments()
+
+    const data = await this.regionModel
+      .find()
+      .populate([{ path: 'devicesCount' }])
+      .select('-password')
+      .limit(limit)
+      .skip(limit * offset)
+
     return { data, limit, offset, total }
   }
 
