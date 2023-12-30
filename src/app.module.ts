@@ -10,6 +10,7 @@ import { ServerdataModule } from './serverdata/serverdata.module'
 import config from './_shared/config'
 import { AuthModule } from './auth/auth.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { TctModule } from './tct/tct.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     BasedataModule,
     ServerdataModule,
     AuthModule,
+    TctModule,
   ],
   controllers: [AppController],
   providers: [AppService],

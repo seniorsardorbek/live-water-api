@@ -27,13 +27,13 @@ export class DevicesController {
   }
 
   @Get()
-  findAll(@Query() query : QueryDto) {
+  findAll(@Query() query: QueryDto) {
     return this.devicesService.findAll(query)
   }
 
   @Get('/reg')
-  regionAll(@Query() query : DeviceQueryDto) {
-    return this.devicesService.regionAll(  query)
+  regionAll(@Query() query: DeviceQueryDto) {
+    return this.devicesService.regionAll(query)
   }
   @Get('/:id')
   findOne(@Param(ValidationPipe) id: ParamIdDto) {
@@ -41,7 +41,10 @@ export class DevicesController {
   }
 
   @Patch(':id')
-  update(@Param(ValidationPipe) id: ParamIdDto, @Body() updateDeviceDto: UpdateDeviceDto) {
+  update(
+    @Param(ValidationPipe) id: ParamIdDto,
+    @Body() updateDeviceDto: UpdateDeviceDto
+  ) {
     return this.devicesService.update(id, updateDeviceDto)
   }
 

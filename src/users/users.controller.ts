@@ -1,28 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
-  UseGuards,
   ValidationPipe,
 } from '@nestjs/common'
-import { UsersService } from './users.service'
+import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
+import { User } from './Schema/Users'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
-import { SetRoles } from 'src/auth/set-roles.decorator'
-import { IsLoggedIn } from 'src/auth/is-loggin.guard'
-import { HasRole } from 'src/auth/has-roles.guard'
-import { ObjectId } from 'mongoose'
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
-import { User } from './Schema/Users'
+import { UsersService } from './users.service'
 
 @Controller('users')
-@ApiTags("Users")
+@ApiTags('Users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -49,7 +44,10 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param(ValidationPipe) id: ParamIdDto, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param(ValidationPipe) id: ParamIdDto,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
     return this.usersService.update(id, updateUserDto)
   }
 

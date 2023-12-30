@@ -1,55 +1,26 @@
 import { Injectable, Res } from '@nestjs/common'
-import { CreateBasedatumDto } from './dto/create-basedatum.dto'
-import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 import { InjectModel } from '@nestjs/mongoose'
-import { Basedata } from './Schema/Basedatas'
+import { Response } from 'express'
 import { Model } from 'mongoose'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
-import { BasedataQueryDto } from './dto/basedata.query.dto'
-import { Device } from 'src/devices/Schema/Device'
-import { formatTimestamp, gRN } from 'src/_shared/utils'
-import { Cron, CronExpression } from '@nestjs/schedule'
-import { ServerdataService } from 'src/serverdata/serverdata.service'
-import { Serverdata } from 'src/serverdata/Schema/Serverdata'
+import { formatTimestamp } from 'src/_shared/utils'
 import * as XLSX from 'xlsx'
-import { Response } from 'express'
+import { Basedata } from './Schema/Basedatas'
+import { BasedataQueryDto } from './dto/basedata.query.dto'
+import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 
 @Injectable()
 export class BasedataService {
-  constructor (
-    @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
-    @InjectModel(Device.name) private deviceModel: Model<Device>,
-    @InjectModel(Serverdata.name) private serverData: Model<Serverdata>,
-    private readonly serverDataService: ServerdataService
+  constructor(
+    @InjectModel(Basedata.name) private basedataModel: Model<Basedata>
   ) {}
-  @Cron(CronExpression.EVERY_HOUR)
-  async create (createBasedatumDto: CreateBasedatumDto) {
-    const devices = await this.deviceModel.find()
-    for (let i = 0; i < devices.length; i++) {
-      const element = devices[i]
-      const date_in_ms = new Date().getTime()
-      const { _id } = await this.basedataModel.create({
-        level: gRN(5, 59),
-        volume: gRN(0.1, 1.2),
-        salinity: gRN(1, 10),
-        device: element._id,
-        signal: 'good',
-        date_in_ms,
-      })
-      this.serverData.create({
-        basedata: _id,
-        device_privet_key: element.device_privet_key,
-        message: 'Yomon.',
-        send_data_in_ms: date_in_ms,
-        status_code: 200,
-      })
-    }
+  async create() {
     return { msg: 'Malumotlar simulation holatda' }
   }
 
   // ! Barcha ma'lumotlarni olish uchun
-  async findAll ({
+  async findAll({
     page,
     filter,
     sort,
@@ -79,19 +50,22 @@ export class BasedataService {
     return { data, limit, offset, total }
   }
 
-  async lastData ({ page }: QueryDto) {
+  async lastData({ page }: QueryDto) {
     const { limit = 10, offset = 0 } = page || {}
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); // Subtract one hour from the current time
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000) // Subtract one hour from the current time
 
     const data = this.basedataModel
-    .find({
-      createdAt: { $gte: oneHourAgo },
-    }).exec();
+      .find({
+        createdAt: { $gte: oneHourAgo },
+      })
+      .limit(limit)
+      .skip(limit * offset)
+      .exec()
     return data
   }
 
   //! Bitta qurilma ma'lumotlarini olish uchun
-  async findOneDevice (
+  async findOneDevice(
     { page }: QueryDto,
     { id }: ParamIdDto
   ): Promise<PaginationResponse<Basedata>> {
@@ -100,19 +74,19 @@ export class BasedataService {
     const total = await this.basedataModel.find({ device: id }).countDocuments()
     const data = await this.basedataModel
       .find({ device: id })
-      // .populate([{ path: 'device', select: 'port serie ip_address ' }])
+      .populate([{ path: 'device', select: 'serie  ' }])
       .limit(limit)
       .skip(limit * offset)
     return { data, limit, offset, total }
   }
 
   //! Bitta malumotni olish uchun
-  findOne ({ id }: ParamIdDto) {
+  findOne({ id }: ParamIdDto) {
     return this.basedataModel.findById(id)
   }
 
   // ! Bitta mal'lumotni yangilash uchun
-  async update ({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
+  async update({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
     const updated = await this.basedataModel.findByIdAndUpdate(
       id,
       updateBasedatumDto,
@@ -126,7 +100,7 @@ export class BasedataService {
   }
 
   //! Bitta mal'lumotni o'chirish uchun
-  async remove ({ id }: ParamIdDto) {
+  async remove({ id }: ParamIdDto) {
     const removed = await this.basedataModel.findByIdAndDelete(id, {
       new: true,
     })
@@ -137,7 +111,7 @@ export class BasedataService {
     }
   }
 
-  async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
+  async xlsx({ filter }: BasedataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}
     if (start) {

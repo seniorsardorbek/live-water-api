@@ -10,16 +10,20 @@ import { DeviceQueryDto } from './dto/device.query.dto'
 
 @Injectable()
 export class DevicesService {
-  constructor (@InjectModel(Device.name) private deviceModel: Model<Device>) {}
- async create (createDeviceDto: CreateDeviceDto) {
-    const existKey = await  this.deviceModel.findOne({device_privet_key :  createDeviceDto.device_privet_key})
-    if(existKey){
-      throw new BadRequestException({msg :"Device private key  already exists!"})
+  constructor(@InjectModel(Device.name) private deviceModel: Model<Device>) {}
+  async create(createDeviceDto: CreateDeviceDto) {
+    const existKey = await this.deviceModel.findOne({
+      device_privet_key: createDeviceDto.device_privet_key,
+    })
+    if (existKey) {
+      throw new BadRequestException({
+        msg: 'Device private key  already exists!',
+      })
     }
     return this.deviceModel.create(createDeviceDto)
   }
 
-  async findAll ({ page }: QueryDto): Promise<PaginationResponse<Device>> {
+  async findAll({ page }: QueryDto): Promise<PaginationResponse<Device>> {
     const { limit = 10, offset = 0 } = page || {}
 
     const total = await this.deviceModel.find().countDocuments()
@@ -35,7 +39,10 @@ export class DevicesService {
     return { data, limit, offset, total }
   }
 
-  async regionAll ({ page , filter }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
+  async regionAll({
+    page,
+    filter,
+  }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
     const { limit = 10, offset = 0 } = page || {}
     const total = await this.deviceModel.find().countDocuments()
     const data = await this.deviceModel
@@ -45,14 +52,14 @@ export class DevicesService {
     return { data, limit, offset, total }
   }
 
-  findOne ({ id }: ParamIdDto) {
+  findOne({ id }: ParamIdDto) {
     return this.deviceModel.findById(id).populate([
       { path: 'region', select: 'name' },
       { path: 'owner', select: 'username first_name last_name' },
     ])
   }
 
-  async update ({ id }: ParamIdDto, updateDeviceDto: UpdateDeviceDto) {
+  async update({ id }: ParamIdDto, updateDeviceDto: UpdateDeviceDto) {
     const updated = await this.deviceModel.findByIdAndUpdate(
       id,
       updateDeviceDto,
@@ -65,7 +72,7 @@ export class DevicesService {
     }
   }
 
-  async remove ({ id }: ParamIdDto) {
+  async remove({ id }: ParamIdDto) {
     const removed = await this.deviceModel.findByIdAndDelete(id, { new: true })
     if (removed) {
       return { msg: "Qurilma o'chirildi." }

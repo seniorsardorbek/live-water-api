@@ -16,7 +16,7 @@ import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { ApiTags } from '@nestjs/swagger'
 
 @Controller('regions')
-@ApiTags("Regions")
+@ApiTags('Regions')
 export class RegionsController {
   constructor(private readonly regionsService: RegionsService) {}
 
@@ -26,7 +26,7 @@ export class RegionsController {
   }
 
   @Get()
-  findAll(@Query() query : QueryDto) {
+  findAll(@Query() query: QueryDto) {
     return this.regionsService.findAll(query)
   }
 
@@ -36,7 +36,10 @@ export class RegionsController {
   }
 
   @Patch(':id')
-  update(@Param(ValidationPipe) id: ParamIdDto, @Body() updateRegionDto: UpdateRegionDto) {
+  update(
+    @Param(ValidationPipe) id: ParamIdDto,
+    @Body() updateRegionDto: UpdateRegionDto
+  ) {
     return this.regionsService.update(id, updateRegionDto)
   }
 

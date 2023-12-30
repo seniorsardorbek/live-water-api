@@ -1,6 +1,17 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
+import { CustomRequest } from 'src/_shared/response'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dto/login.dto'
+import { IsLoggedIn } from './is-loggin.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -10,5 +21,11 @@ export class AuthController {
   @Post('login')
   login(@Body() data: LoginDto) {
     return this.authService.login(data)
+  }
+
+  @UseGuards(IsLoggedIn)
+  @Get()
+  verifyMe(@Req() req: CustomRequest) {
+    return this.authService.verifyWithToken(req)
   }
 }

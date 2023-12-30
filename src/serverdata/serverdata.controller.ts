@@ -18,8 +18,6 @@ import { Response } from 'express'
 import { ServerdataQueryDto } from './dto/serverdata.query.dto'
 import { ApiTags } from '@nestjs/swagger'
 
-
-
 @Controller('serverdata')
 @ApiTags('Serverdata')
 export class ServerdataController {
@@ -31,7 +29,7 @@ export class ServerdataController {
   }
 
   @Get()
-  findAll(@Query() query : QueryDto) {
+  findAll(@Query() query: QueryDto) {
     return this.serverdataService.findAll(query)
   }
 
@@ -52,8 +50,11 @@ export class ServerdataController {
   remove(@Param(ValidationPipe) id: ParamIdDto) {
     return this.serverdataService.remove(id)
   }
-  @Get("xlsx")
-  async exportToExcel(@Res() res: Response , @Query() query: ServerdataQueryDto){
-    return this.serverdataService.xlsx( query, res );
+  @Get('xlsx')
+  async exportToExcel(
+    @Res() res: Response,
+    @Query() query: ServerdataQueryDto
+  ) {
+    return this.serverdataService.xlsx(query, res)
   }
 }

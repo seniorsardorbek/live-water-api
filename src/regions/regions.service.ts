@@ -1,21 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { CreateRegionDto } from './dto/create-region.dto'
-import { UpdateRegionDto } from './dto/update-region.dto'
-import { Model, ObjectId } from 'mongoose'
-import { Region } from './Schema/Regions'
 import { InjectModel } from '@nestjs/mongoose'
-import { Device } from 'src/devices/Schema/Device'
+import { Model } from 'mongoose'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
+import { Region } from './Schema/Regions'
+import { CreateRegionDto } from './dto/create-region.dto'
+import { UpdateRegionDto } from './dto/update-region.dto'
 
 @Injectable()
 export class RegionsService {
-  constructor (@InjectModel(Region.name) private regionModel: Model<Region>) {}
-  create (data: CreateRegionDto) {
+  constructor(@InjectModel(Region.name) private regionModel: Model<Region>) {}
+  create(data: CreateRegionDto) {
     return this.regionModel.create(data)
   }
 
-  async findAll ({ page }: QueryDto): Promise<PaginationResponse<Region>> {
+  async findAll({ page }: QueryDto): Promise<PaginationResponse<Region>> {
     const { limit = 10, offset = 0 } = page || {}
     const total = await this.regionModel.find().countDocuments()
 
@@ -29,14 +28,14 @@ export class RegionsService {
     return { data, limit, offset, total }
   }
 
-  async findOne ({ id }: ParamIdDto) {
+  async findOne({ id }: ParamIdDto) {
     const regionWithDevices = await this.regionModel
       .findById(id)
       .populate('devicesCount')
     return regionWithDevices
   }
 
-  async update ({ id }: ParamIdDto, updateRegionDto: UpdateRegionDto) {
+  async update({ id }: ParamIdDto, updateRegionDto: UpdateRegionDto) {
     const updated = await this.regionModel.findByIdAndUpdate(
       id,
       updateRegionDto,
@@ -49,7 +48,7 @@ export class RegionsService {
     }
   }
 
-  async remove ({ id }: ParamIdDto) {
+  async remove({ id }: ParamIdDto) {
     const removed = await this.regionModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Hudud mavjud emas.' })

@@ -3,7 +3,7 @@ import {
   IsMongoId,
   IsObject,
   IsOptional,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator'
 import { ObjectId } from 'mongoose'
 import { Paginate } from 'src/_shared/query.dto'

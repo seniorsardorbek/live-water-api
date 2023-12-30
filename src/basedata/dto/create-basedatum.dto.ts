@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator'
 import { ObjectId } from 'mongoose'
 import { Status } from 'src/_shared/enums'
 
@@ -12,7 +12,6 @@ export class CreateBasedatumDto {
   @IsString()
   device: ObjectId
 
-
   @ApiProperty({
     title: 'Level',
     example: 1,
@@ -20,7 +19,6 @@ export class CreateBasedatumDto {
   @IsNotEmpty()
   @IsNumber()
   level: number
-
 
   @ApiProperty({
     title: 'Volume number',
@@ -45,7 +43,6 @@ export class CreateBasedatumDto {
   @IsNotEmpty()
   @IsNumber()
   date_in_ms?: number
-
 
   @ApiProperty({
     title: 'Signal enum good | nosignal',

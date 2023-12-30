@@ -1,26 +1,26 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import * as bcrypt from 'bcryptjs'
+import { Model } from 'mongoose'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
+import { PaginationResponse } from 'src/_shared/response'
+import { User } from './Schema/Users'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { InjectModel } from '@nestjs/mongoose'
-import { User } from './Schema/Users'
-import { Model, ObjectId } from 'mongoose'
-import * as bcrypt from 'bcryptjs'
-import { PaginationResponse } from 'src/_shared/response'
-import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 const saltOrRounds = 12
 @Injectable()
 export class UsersService {
-  constructor (@InjectModel(User.name) private userModel: Model<User>) {}
-  async create (data: CreateUserDto) {
-    const username = await this.userModel.findOne({username : data.username})
-    if(username){
-       throw new BadRequestException({msg: "Username allqachon foydalanilgan"})
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  async create(data: CreateUserDto) {
+    const username = await this.userModel.findOne({ username: data.username })
+    if (username) {
+      throw new BadRequestException({ msg: 'Username allqachon foydalanilgan' })
     }
     data.password = await bcrypt.hash(data.password, saltOrRounds)
     return this.userModel.create(data)
   }
 
-  async findAll ({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
+  async findAll({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
     const { limit = 10, offset = 0 } = page || {}
     const search = q
       ? {
@@ -42,7 +42,7 @@ export class UsersService {
     return { data, limit, offset, total }
   }
 
-  findOne ({ id }: ParamIdDto) {
+  findOne({ id }: ParamIdDto) {
     const user = this.userModel
       .findById(id)
       .populate([{ path: 'devices', select: 'port serie ip_address -owner' }])
@@ -50,7 +50,7 @@ export class UsersService {
     return user
   }
 
-  async update ({ id }: ParamIdDto, updateUserDto: UpdateUserDto) {
+  async update({ id }: ParamIdDto, updateUserDto: UpdateUserDto) {
     if (updateUserDto.password) {
       updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10)
     }
@@ -64,7 +64,7 @@ export class UsersService {
     }
   }
 
-  async remove ({ id }: ParamIdDto) {
+  async remove({ id }: ParamIdDto) {
     const removed = await this.userModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })

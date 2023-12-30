@@ -13,15 +13,15 @@ import * as XLSX from 'xlsx'
 
 @Injectable()
 export class ServerdataService {
-  constructor (
+  constructor(
     @InjectModel(Serverdata.name)
     private readonly serverdataModel: Model<Serverdata>
   ) {}
-  create (createServerdatumDto: CreateServerdatumDto) {
+  create(createServerdatumDto: CreateServerdatumDto) {
     return this.serverdataModel.create(createServerdatumDto)
   }
 
-  async findAll ({ page }: QueryDto): Promise<PaginationResponse<Serverdata>> {
+  async findAll({ page }: QueryDto): Promise<PaginationResponse<Serverdata>> {
     const { limit = 10, offset = 0 } = page || {}
 
     const [result] = await this.serverdataModel
@@ -50,11 +50,11 @@ export class ServerdataService {
     return { data, limit, offset, total }
   }
 
-  findOne ({ id }: ParamIdDto) {
+  findOne({ id }: ParamIdDto) {
     return this.serverdataModel.findById(id).populate('basedata')
   }
 
-  async update ({ id }: ParamIdDto, updateServerdatumDto: UpdateServerdatumDto) {
+  async update({ id }: ParamIdDto, updateServerdatumDto: UpdateServerdatumDto) {
     const updated = await this.serverdataModel.findByIdAndUpdate(
       id,
       updateServerdatumDto,
@@ -67,7 +67,7 @@ export class ServerdataService {
     }
   }
 
-  async remove ({ id }: ParamIdDto) {
+  async remove({ id }: ParamIdDto) {
     const removed = await this.serverdataModel.findByIdAndDelete(id)
     if (!removed) {
       throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
@@ -76,7 +76,7 @@ export class ServerdataService {
     }
   }
 
-  async xlsx ({ filter }: ServerdataQueryDto, @Res() res: Response) {
+  async xlsx({ filter }: ServerdataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}
     if (start) {

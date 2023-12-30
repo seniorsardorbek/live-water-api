@@ -7,7 +7,7 @@ import {
   IsNumber,
   IsObject,
   IsOptional,
-  ValidateNested
+  ValidateNested,
 } from 'class-validator'
 import { ObjectId } from 'mongoose'
 import { SortOrder } from 'src/_shared/enums'
@@ -26,7 +26,7 @@ class Filter {
   @IsOptional()
   @IsMongoId()
   device: ObjectId
-  
+
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()
