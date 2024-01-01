@@ -43,13 +43,10 @@ export class DevicesService {
     page,
     filter,
   }: DeviceQueryDto): Promise<PaginationResponse<Device>> {
-    const { limit = 10, offset = 0 } = page || {}
     const total = await this.deviceModel.find().countDocuments()
     const data = await this.deviceModel
       .find(filter)
-      .limit(limit)
-      .skip(limit * offset)
-    return { data, limit, offset, total }
+    return { data, limit : 0 , offset : 0,  total }
   }
 
   findOne({ id }: ParamIdDto) {
