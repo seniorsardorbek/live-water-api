@@ -76,7 +76,11 @@ export class TctService {
       message: res.data.message,
       device_privet_key: data.code,
       send_data_in_ms: date_in_ms,
-      status_code: res.data.status === 'succes' ? 200 : 404,
+      status_code:  res.data.status === 'success' 
+        ? 200
+        : res.data.status === 'error'
+        ? 404
+        : '500'
     })
   }
 }
