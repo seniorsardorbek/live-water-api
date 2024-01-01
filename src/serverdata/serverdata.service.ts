@@ -29,9 +29,9 @@ export class ServerdataService {
         {
           $facet: {
             data: [
+              { $sort: { created_at: -1 } },
               { $skip: limit * offset },
               { $limit: limit },
-              { $sort: { created_at: -1 } },
             ],
             total: [
               {

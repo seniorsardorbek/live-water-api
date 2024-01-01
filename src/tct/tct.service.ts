@@ -34,7 +34,7 @@ export class TctService {
     salinity: number,
     date_in_ms: number
   ) {
-    const url = 'http://89.236.195.198:2010'
+    const url = 'http://94.228.112.211:2010'
     const data = {
       code: dev.device_privet_key,
       data: {
@@ -52,7 +52,11 @@ export class TctService {
       })
       .toPromise()
       .then((res) => {
+        console.log(res);
         this.saveData(data, dev, res, date_in_ms)
+      }).catch((err)=>{
+        this.saveData(data, dev, err, date_in_ms)
+
       })
   }
 
@@ -69,16 +73,16 @@ export class TctService {
       level,
       salinity,
       volume,
-      signal: 'good',
-    })
+      signal:  (level && salinity && volume ) ? "good" : "nosignal"  
+  })
     this.serverDataModel.create({
       basedata: _id,
-      message: res.data.message,
+      message: res.data?.message  ||"Error saving data",
       device_privet_key: data.code,
       send_data_in_ms: date_in_ms,
-      status_code:  res.data.status === 'success' 
+      status_code:  res?.data?.status === 'success' 
         ? 200
-        : res.data.status === 'error'
+        : res.data?.status === 'error'
         ? 404
         : 500
     })
