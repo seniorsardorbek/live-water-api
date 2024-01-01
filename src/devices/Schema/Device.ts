@@ -6,6 +6,7 @@ import mongoose, { ObjectId } from 'mongoose'
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+
   },
 })
 export class Device {
