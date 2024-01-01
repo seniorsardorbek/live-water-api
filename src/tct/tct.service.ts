@@ -80,7 +80,7 @@ export class TctService {
         ? 200
         : res.data.status === 'error'
         ? 404
-        : '500'
+        : 500
     })
   }
 }
