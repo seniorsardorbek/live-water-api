@@ -32,7 +32,7 @@ export class DevicesService {
       .find()
       .populate([
         { path: 'region', select: 'name' },
-        { path: 'owner', select: 'first_name last_name -id -_id ' },
+        { path: 'owner', select: 'first_name last_name' },
       ])
       .limit(limit)
       .skip(limit * offset)
