@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
@@ -15,6 +16,9 @@ import { User } from './Schema/Users'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UsersService } from './users.service'
+import { SetRoles } from 'src/auth/set-roles.decorator'
+import { IsLoggedIn } from 'src/auth/is-loggin.guard'
+import { HasRole } from 'src/auth/has-roles.guard'
 
 @Controller('users')
 @ApiTags('Users')
@@ -30,8 +34,8 @@ export class UsersController {
     return this.usersService.create(createUserDto)
   }
 
-  // @SetRoles('super_admin', 'admin')
-  // @UseGuards(IsLoggedIn, HasRole)
+  @SetRoles('super_admin', 'admin')
+  @UseGuards(IsLoggedIn, HasRole)
 
   @Get()
   findAll(@Query() query: QueryDto) {
