@@ -48,7 +48,6 @@ export class ServerdataService {
         },
       ])
       .exec()
-
     const { data, total } = result
 
     return { data, limit, offset, total }
@@ -95,7 +94,7 @@ export class ServerdataService {
     if (device) {
       query.device = device
     }
-    const data = await this.serverdataModel.find({ ...query }).exec() // Fetch data from MongoDB
+    const data = await this.serverdataModel.find({ ...query }).exec() 
     const jsonData = data.map((item: any) => {
       const obj = item.toObject()
       obj._id = item._id.toString()

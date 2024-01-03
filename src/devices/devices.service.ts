@@ -36,6 +36,8 @@ export class DevicesService {
       ])
       .limit(limit)
       .skip(limit * offset)
+      
+
     return { data, limit, offset, total }
   }
 

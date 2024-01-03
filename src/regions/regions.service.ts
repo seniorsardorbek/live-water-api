@@ -21,10 +21,10 @@ export class RegionsService {
     const data = await this.regionModel
       .find()
       .populate([{ path: 'devicesCount' }])
-      .select('-password')
+      .select('-id')
       .limit(limit)
       .skip(limit * offset)
-
+   
     return { data, limit, offset, total }
   }
 
