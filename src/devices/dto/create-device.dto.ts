@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { Transform } from 'class-transformer'
 import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator'
 import { ObjectId } from 'mongoose'
 
@@ -32,6 +33,7 @@ export class CreateDeviceDto {
     example: 4000,
   })
   @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   port: number
 
@@ -40,6 +42,7 @@ export class CreateDeviceDto {
     example: '53.6881488',
   })
   @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   lat: number
 
@@ -48,6 +51,7 @@ export class CreateDeviceDto {
     example: '56.588925',
   })
   @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   long: number
 
