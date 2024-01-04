@@ -34,8 +34,7 @@ export class UsersController {
     return this.usersService.create(createUserDto)
   }
 
-  @SetRoles('super_admin', 'admin')
-  @UseGuards(IsLoggedIn, HasRole)
+
 
   @Get()
   findAll(@Query() query: QueryDto) {

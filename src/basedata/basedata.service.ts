@@ -12,15 +12,15 @@ import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 
 @Injectable()
 export class BasedataService {
-  constructor(
+  constructor (
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>
   ) {}
-  async create() {
+  async create () {
     return { msg: 'Malumotlar simulation holatda' }
   }
 
   // ! Barcha ma'lumotlarni olish uchun
-  async findAll({
+  async findAll ({
     page,
     filter,
     sort,
@@ -50,7 +50,7 @@ export class BasedataService {
     return { data, limit, offset, total }
   }
 
-  async lastData({ page }: QueryDto) {
+  async lastData ({ page }: QueryDto) {
     const { limit = 10, offset = 0 } = page || {}
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000) // Subtract one hour from the current time
 
@@ -65,7 +65,7 @@ export class BasedataService {
   }
 
   //! Bitta qurilma ma'lumotlarini olish uchun
-  async findOneDevice(
+  async findOneDevice (
     { page }: QueryDto,
     { id }: ParamIdDto
   ): Promise<PaginationResponse<Basedata>> {
@@ -81,12 +81,12 @@ export class BasedataService {
   }
 
   //! Bitta malumotni olish uchun
-  findOne({ id }: ParamIdDto) {
+  findOne ({ id }: ParamIdDto) {
     return this.basedataModel.findById(id)
   }
 
   // ! Bitta mal'lumotni yangilash uchun
-  async update({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
+  async update ({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
     const updated = await this.basedataModel.findByIdAndUpdate(
       id,
       updateBasedatumDto,
@@ -100,7 +100,7 @@ export class BasedataService {
   }
 
   //! Bitta mal'lumotni o'chirish uchun
-  async remove({ id }: ParamIdDto) {
+  async remove ({ id }: ParamIdDto) {
     const removed = await this.basedataModel.findByIdAndDelete(id, {
       new: true,
     })
@@ -111,14 +111,13 @@ export class BasedataService {
     }
   }
 
-  async xlsx({ filter }: BasedataQueryDto, @Res() res: Response) {
+  async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
     const { start, end, device } = filter || {}
     const query: any = {}
     if (start) {
       query.date_in_ms = query.date_in_ms || {}
       query.date_in_ms.$gte = start
     }
-
     if (end) {
       query.date_in_ms = query.date_in_ms || {}
       query.date_in_ms.$lte = end
