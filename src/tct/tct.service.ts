@@ -77,7 +77,7 @@ export class TctService {
   })
     this.serverDataModel.create({
       basedata: _id,
-      message: res.data?.message  ||"Error saving data",
+      message: res.data?.message  ||"Malumotlarni serverga yuborishda server tomondan xatolik",
       device_privet_key: data.code,
       send_data_in_ms: date_in_ms,
       status_code:  res?.data?.status === 'success' 
