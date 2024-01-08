@@ -9,6 +9,8 @@ import {
   Query,
   Res,
   ValidationPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common'
 import { BasedataService } from './basedata.service'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
@@ -23,6 +25,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { Basedata } from './Schema/Basedatas'
+import { IsLoggedIn } from 'src/auth/is-loggin.guard'
+import { HasRole } from 'src/auth/has-roles.guard'
+import { SetRoles } from 'src/auth/set-roles.decorator'
+import { CustomRequest } from 'src/_shared/response'
 
 @Controller('basedata')
 @ApiTags('Basedata')
@@ -55,6 +61,12 @@ export class BasedataController {
   @Get('last-updated')
   lastData(@Query() query: QueryDto) {
     return this.basedataService.lastData(query)
+  }
+  @SetRoles('operator')
+  @UseGuards(IsLoggedIn , HasRole)
+  @Get('operator')
+  opratorDeviceBaseData(@Query() query: QueryDto , @Req() req:  CustomRequest) {
+    return this.basedataService.opratorDeviceBaseData(query , req )
   }
   // !
   @Get('device/:id')

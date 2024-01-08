@@ -42,6 +42,6 @@ export class AuthService {
         msg: 'Foydlanuvchi topilmadi yoki token eskirgan!',
       })
     }
-    return { msg: 'Muvaffaqqiyatli kirdingiz', data: user }
+    return { msg: 'Muvaffaqqiyatli kirdingiz', data: user , role :  user.role }
   }
 }

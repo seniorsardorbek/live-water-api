@@ -3,17 +3,19 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Response } from 'express'
 import { Model } from 'mongoose'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
-import { PaginationResponse } from 'src/_shared/response'
+import { CustomRequest, PaginationResponse } from 'src/_shared/response'
 import { formatTimestamp } from 'src/_shared/utils'
 import * as XLSX from 'xlsx'
 import { Basedata } from './Schema/Basedatas'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
 import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
+import { Device } from 'src/devices/Schema/Device'
 
 @Injectable()
 export class BasedataService {
   constructor (
-    @InjectModel(Basedata.name) private basedataModel: Model<Basedata>
+    @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
+    @InjectModel(Device.name) private deviceModel: Model<Device>
   ) {}
   async create () {
     return { msg: 'Malumotlar simulation holatda' }
@@ -58,6 +60,21 @@ export class BasedataService {
       .find({
         createdAt: { $gte: oneHourAgo },
       })
+      .limit(limit)
+      .skip(limit * offset)
+      .exec()
+    return data
+  }
+  async opratorDeviceBaseData ({ page }: QueryDto , req : CustomRequest ) {
+    const { limit = 10, offset = 0 } = page || {}
+    const owner  = req.user.id
+    const devices  = await this.deviceModel.find({ owner }).lean()
+    const devices_id = devices.map((device) => device._id);
+    const data = await this.basedataModel
+      .find({
+        device: { $in: devices_id },
+      })
+      .sort({ created_at:  -1})
       .limit(limit)
       .skip(limit * offset)
       .exec()
