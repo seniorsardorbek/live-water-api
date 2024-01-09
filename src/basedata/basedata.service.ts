@@ -156,7 +156,7 @@ export class BasedataService {
   }
 
   async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
-    const { start, end, device } = filter || {}
+    const { start, end, device , region } = filter || {}
     const query: any = {}
     if (start) {
       query.date_in_ms = query.date_in_ms || {}
@@ -168,6 +168,11 @@ export class BasedataService {
     }
     if (device) {
       query.device = device
+    }
+    if (region) {
+      const devices = await this.deviceModel.find({ region }).lean()
+      const devices_id = devices.map(device => device._id)
+      query.device = { $in: devices_id }
     }
     const data = await this.basedataModel.find({ ...query }).exec() // Fetch data from MongoDB
     const jsonData = data.map((item: any) => {
