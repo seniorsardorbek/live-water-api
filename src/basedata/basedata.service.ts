@@ -70,6 +70,8 @@ export class BasedataService {
       .exec()
     return data
   }
+
+  // ! operator devices
   async operatorDeviceBaseData (
     { page, filter, sort }: BasedataQueryDto,
     req: CustomRequest
