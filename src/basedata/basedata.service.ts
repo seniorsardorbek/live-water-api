@@ -46,7 +46,7 @@ export class BasedataService {
     const data = await this.basedataModel
       .find({ ...query })
       .sort({ [by]: order === 'desc' ? -1 : 1 })
-      .populate([{ path: 'device', select: 'port serie ip_address ' }])
+      .populate([{ path: 'device', select: 'serie' }])
       .limit(limit)
       .skip(limit * offset)
     return { data, limit, offset, total }
@@ -65,20 +65,42 @@ export class BasedataService {
       .exec()
     return data
   }
-  async opratorDeviceBaseData ({ page }: QueryDto , req : CustomRequest ) {
+  async operatorDeviceBaseData (
+    { page, filter, sort }: BasedataQueryDto,
+    req: CustomRequest
+  ) {
     const { limit = 10, offset = 0 } = page || {}
-    const owner  = req.user.id
-    const devices  = await this.deviceModel.find({ owner }).lean()
-    const devices_id = devices.map((device) => device._id);
+    const { by = 'created_at', order = 'desc' } = sort || {}
+    const { start, end, device } = filter || {}
+    const query: any = {}
+    if (start) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$gte = start
+    }
+    if (end) {
+      query.date_in_ms = query.date_in_ms || {}
+      query.date_in_ms.$lte = end
+    }
+    if (device) {
+      query.device = device
+    }
+    const owner = req.user.id
+    const devices = await this.deviceModel.find({ owner }).lean()
+    const devices_id = devices.map(device => device._id)
+    const total = await this.basedataModel
+      .find({ device: { $in: devices_id }, ...query })
+      .countDocuments()
     const data = await this.basedataModel
       .find({
         device: { $in: devices_id },
+        ...query,
       })
-      .sort({ created_at:  -1})
+      .sort({ [by]: order === 'desc' ? -1 : 1 })
+      .populate([{ path: 'device', select: 'serie' }])
       .limit(limit)
       .skip(limit * offset)
       .exec()
-    return data
+    return { data, limit, offset, total }
   }
 
   //! Bitta qurilma ma'lumotlarini olish uchun

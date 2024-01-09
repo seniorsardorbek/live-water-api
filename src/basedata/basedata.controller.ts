@@ -65,8 +65,8 @@ export class BasedataController {
   @SetRoles('operator')
   @UseGuards(IsLoggedIn , HasRole)
   @Get('operator')
-  opratorDeviceBaseData(@Query() query: QueryDto , @Req() req:  CustomRequest) {
-    return this.basedataService.opratorDeviceBaseData(query , req )
+  operatorDeviceBaseData(@Query() query: BasedataQueryDto , @Req() req:  CustomRequest) {
+    return this.basedataService.operatorDeviceBaseData(query , req )
   }
   // !
   @Get('device/:id')

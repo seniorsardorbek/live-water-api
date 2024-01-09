@@ -52,7 +52,6 @@ export class TctService {
       })
       .toPromise()
       .then((res) => {
-        console.log(res);
         this.saveData(data, dev, res, date_in_ms)
       }).catch((err)=>{
         this.saveData(data, dev, err, date_in_ms)
