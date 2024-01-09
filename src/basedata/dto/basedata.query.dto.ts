@@ -28,6 +28,10 @@ class Filter {
   device: ObjectId
 
   @IsOptional()
+  @IsMongoId()
+  region: ObjectId
+
+  @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()
   start: number

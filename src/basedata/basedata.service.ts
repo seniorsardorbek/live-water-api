@@ -29,7 +29,7 @@ export class BasedataService {
   }: BasedataQueryDto): Promise<PaginationResponse<Basedata>> {
     const { limit = 10, offset = 0 } = page || {}
     const { by = 'created_at', order = 'desc' } = sort || {}
-    const { start, end, device } = filter || {}
+    const { start, end, device, region } = filter || {}
     const query: any = {}
     if (start) {
       query.date_in_ms = query.date_in_ms || {}
@@ -41,6 +41,11 @@ export class BasedataService {
     }
     if (device) {
       query.device = device
+    }
+    if (region) {
+      const devices = await this.deviceModel.find({ region }).lean()
+      const devices_id = devices.map(device => device._id)
+      query.device = { $in: devices_id }
     }
     const total = await this.basedataModel.find({ ...query }).countDocuments()
     const data = await this.basedataModel
