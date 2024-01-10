@@ -158,7 +158,7 @@ export class BasedataService {
   }
 
   async xlsx ({ filter }: BasedataQueryDto, @Res() res: Response) {
-    const { start, end, device , region } = filter || {}
+    const { start, end, device, region } = filter || {}
     const query: any = {}
     if (start) {
       query.date_in_ms = query.date_in_ms || {}
@@ -171,17 +171,20 @@ export class BasedataService {
     if (device) {
       query.device = device
     }
-    if (region) {
+    if (!device && region) {
       const devices = await this.deviceModel.find({ region }).lean()
       const devices_id = devices.map(device => device._id)
       query.device = { $in: devices_id }
     }
-    const data = await this.basedataModel.find({ ...query }).exec() // Fetch data from MongoDB
+    const data = await this.basedataModel
+      .find({ ...query })
+      .populate([{ path: 'device', select: 'serie' }])
+      .exec()
     const jsonData = data.map((item: any) => {
       const obj = item.toObject()
-      obj._id = item._id.toString()
-      obj.device = item.device.toString()
-      obj.date_in_ms = formatTimestamp(item.date_in_ms)
+      obj._id = item?._id?.toString()
+      obj.device = item?.device?.serie
+      obj.date_in_ms = formatTimestamp(item?.date_in_ms)
       return obj
     })
     const ws = XLSX.utils.json_to_sheet(jsonData)

@@ -46,8 +46,7 @@ export class BasedataController {
   // !
   @Get()
   @ApiOperation({
-    summary: 'Get all cats',
-    description: 'Returns an array of all cats.',
+    summary: 'Get all  basedata',
   })
   @ApiResponse({ status: 200, description: 'Successfully retrieved cats.' })
   findAll(@Query() query: BasedataQueryDto) {
