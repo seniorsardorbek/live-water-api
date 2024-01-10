@@ -42,7 +42,7 @@ export class BasedataService {
     if (device) {
       query.device = device
     }
-    if (region) {
+    if (!device && region) {
       const devices = await this.deviceModel.find({ region }).lean()
       const devices_id = devices.map(device => device._id)
       query.device = { $in: devices_id }
