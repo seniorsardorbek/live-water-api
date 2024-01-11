@@ -4,35 +4,44 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { AxiosResponse } from 'axios'
 import { Model } from 'mongoose'
-import { generateRandomNumber, getCurrentDateTime } from 'src/_shared/utils'
+import {
+   getDataFromDevice,
+  getCurrentDateTime,
+  write,
+} from 'src/_shared/utils'
 import { Basedata } from 'src/basedata/Schema/Basedatas'
 import { Device } from 'src/devices/Schema/Device'
 import { Serverdata } from 'src/serverdata/Schema/Serverdata'
 
 @Injectable()
 export class TctService {
-  constructor(
+  constructor (
     private httpService: HttpService,
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
     @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
   ) {}
+
   @Cron(CronExpression.EVERY_HOUR)
-  async create() {
+  async create () {
     const devices = await this.deviceModel.find()
     const date_in_ms = new Date().getTime()
-    devices.map((dev) => {
-      const { level, volume, salinity } = generateRandomNumber(5, 59)
-      this.fetchData(dev, level, volume, salinity, date_in_ms)
+    devices.map(async dev => {
+      const { level, volume, salinity, pressure } = await getDataFromDevice(
+        5,
+        59
+      )
+      this.fetchData(dev, level, volume, salinity, date_in_ms, pressure)
     })
   }
 
-  fetchData(
+  fetchData (
     dev: Device,
     level: number,
     volume: number,
     salinity: number,
-    date_in_ms: number
+    date_in_ms: number,
+    pressure: number,
   ) {
     const url = 'http://94.228.112.211:2010'
     const data = {
@@ -51,19 +60,20 @@ export class TctService {
         },
       })
       .toPromise()
-      .then((res) => {
-        this.saveData(data, dev, res, date_in_ms)
-      }).catch((err)=>{
-        this.saveData(data, dev, err, date_in_ms)
-
+      .then(res => {
+        this.saveData(data, dev, res, date_in_ms, pressure)
+      })
+      .catch(err => {
+        this.saveData(data, dev, err, date_in_ms, pressure)
       })
   }
 
-  async saveData(
+  async saveData (
     data: any,
     device: any,
     res: AxiosResponse,
-    date_in_ms: number
+    date_in_ms: number,
+    pressure: number
   ) {
     const { level, salinity, volume } = data.data
     const { _id } = await this.basedataModel.create({
@@ -71,19 +81,23 @@ export class TctService {
       device: device._id,
       level,
       salinity,
+      pressure,
       volume,
-      signal:  (level && salinity && volume ) ? "good" : "nosignal"  
-  })
+      signal: level && salinity && volume ? 'good' : 'nosignal',
+    })
     this.serverDataModel.create({
       basedata: _id,
-      message: res.data?.message  ||"Malumotlarni serverga yuborishda server tomondan xatolik",
+      message:
+        res.data?.message ||
+        'Malumotlarni serverga yuborishda server tomondan xatolik',
       device_privet_key: data.code,
       send_data_in_ms: date_in_ms,
-      status_code:  res?.data?.status === 'success' 
-        ? 200
-        : res.data?.status === 'error'
-        ? 404
-        : 500
+      status_code:
+        res?.data?.status === 'success'
+          ? 200
+          : res.data?.status === 'error'
+          ? 404
+          : 500,
     })
   }
 }

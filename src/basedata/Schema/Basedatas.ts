@@ -24,6 +24,11 @@ export class Basedata {
     type: Number,
     required: true,
   })
+  pressure: number
+  @Prop({
+    type: Number,
+    required: true,
+  })
   salinity: number
   @Prop({
     type: Number,

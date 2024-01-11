@@ -18,7 +18,7 @@ class Sort {
   order: SortOrder
 
   @IsNotEmpty()
-  @IsIn(['status', 'send_data_in_ms', 'volume'])
+  @IsIn(['status', 'send_data_in_ms'])
   by: string
 }
 

@@ -27,6 +27,14 @@ export class CreateBasedatumDto {
   @IsNotEmpty()
   @IsNumber()
   volume: number
+  
+  @ApiProperty({
+    title: 'Pressure number',
+    example: 1,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  pressure: number
 
   @ApiProperty({
     title: 'Salinity number',
