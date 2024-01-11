@@ -21,7 +21,7 @@ export class TctService {
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
     @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
   ) {}
-
+// EVERY Hour Created new Basedata
   @Cron(CronExpression.EVERY_HOUR)
   async create () {
     const devices = await this.deviceModel.find()
