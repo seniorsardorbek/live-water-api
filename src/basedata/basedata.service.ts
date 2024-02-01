@@ -51,7 +51,7 @@ export class BasedataService {
     const data = await this.basedataModel
       .find({ ...query })
       .sort({ [by]: order === 'desc' ? -1 : 1 })
-      .populate([{ path: 'device', select: 'serie' }])
+      .populate([{ path: 'device', select: 'serie name' }])
       .limit(limit)
       .skip(limit * offset)
     return { data, limit, offset, total }

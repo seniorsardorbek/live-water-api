@@ -13,6 +13,11 @@ export class Device {
     type: String,
     required: true,
   })
+  name: string
+  @Prop({
+    type: String,
+    required: true,
+  })
   serie: string
 
   @Prop({
@@ -21,18 +26,6 @@ export class Device {
     unique: true,
   })
   device_privet_key: string
-
-  @Prop({
-    type: String,
-    required: true,
-  })
-  ip_address: string
-
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  port: number
 
   @Prop({
     type: Number,

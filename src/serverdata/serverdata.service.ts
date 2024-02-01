@@ -48,7 +48,7 @@ export class ServerdataService {
         },
       ])
       .exec()
-    const { data, total } = result
+    const { data, total =0 } = result
 
     return { data, limit, offset, total }
   }

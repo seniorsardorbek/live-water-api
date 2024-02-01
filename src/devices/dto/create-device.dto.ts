@@ -5,6 +5,15 @@ import { ObjectId } from 'mongoose'
 
 export class CreateDeviceDto {
   @ApiProperty({
+    title: 'Name ',
+    example: 'Andijon birinchi daha',
+  })
+  @IsNotEmpty()
+  @IsString()
+  name: string
+
+
+  @ApiProperty({
     title: 'serie  unique',
     example: '7620fw073',
   })
@@ -20,22 +29,7 @@ export class CreateDeviceDto {
   @IsString()
   device_privet_key: string
 
-  @ApiProperty({
-    title: 'ipAdress string',
-    example: '127.0.0.1',
-  })
-  @IsNotEmpty()
-  @IsString()
-  ip_address: string
-
-  @ApiProperty({
-    title: 'port',
-    example: 4000,
-  })
-  @IsNotEmpty()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  port: number
+ 
 
   @ApiProperty({
     title: 'lat',
