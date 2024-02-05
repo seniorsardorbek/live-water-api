@@ -19,17 +19,12 @@ export class Basedata {
     type: Number,
     required: true,
   })
-  volume: number
-  @Prop({
-    type: Number,
-    required: true,
-  })
-  pressure: number
-  @Prop({
-    type: Number,
-    required: true,
-  })
   salinity: number
+  @Prop({
+    type: Number,
+    required: true,
+  })
+  temperature: number
   @Prop({
     type: Number,
     required: true,
@@ -50,6 +45,3 @@ export class Basedata {
   device: ObjectId
 }
 export const BasedataSchema = SchemaFactory.createForClass(Basedata)
-
-// BasedataSchema.set('toObject', { virtuals: true });
-// BasedataSchema.set('toJSON', { virtuals: true });

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { Transform, Type } from 'class-transformer'
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsInt,
   IsMongoId,
@@ -8,11 +8,11 @@ import {
   IsString,
   Min,
   ValidateNested,
-} from 'class-validator'
+} from 'class-validator';
 
 export class Paginate {
   @ApiProperty({
-    title: 'offset page number',
+    title: 'Offset page number',
     default: 0,
     example: 1,
   })
@@ -20,10 +20,10 @@ export class Paginate {
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(0)
-  offset?: number
+  offset?: number;
 
   @ApiProperty({
-    title: 'limit number  ',
+    title: 'Limit number',
     default: 10,
     example: 1,
   })
@@ -31,26 +31,34 @@ export class Paginate {
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
-  limit?: number
+  limit?: number;
 }
 
 export class QueryDto {
+  @ApiProperty({
+    title: 'Pagination options',
+    type: Paginate,
+  })
   @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => Paginate)
-  page?: Paginate
+  page?: Paginate;
 
+  @ApiProperty({
+    title: 'Search query',
+    example: 'search keyword',
+  })
   @IsOptional()
   @IsString()
-  q?: string
+  q?: string;
 }
 
 export class ParamIdDto {
   @ApiProperty({
-    title: 'Mongo Id ',
+    title: 'MongoDB ID',
     example: '658db8b7368321d137d31082',
   })
   @IsMongoId()
-  id: string
+  id: string;
 }

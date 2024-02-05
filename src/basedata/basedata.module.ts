@@ -16,6 +16,6 @@ import { ServerdataService } from 'src/serverdata/serverdata.service'
     ]),
   ],
   controllers: [BasedataController],
-  providers: [BasedataService, ServerdataService],
+  providers: [BasedataService,]
 })
 export class BasedataModule {}

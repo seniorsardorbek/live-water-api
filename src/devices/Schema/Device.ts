@@ -12,13 +12,15 @@ export class Device {
   @Prop({
     type: String,
     required: true,
+    unique: true,
   })
-  name: string
+  serie: string
+
   @Prop({
     type: String,
     required: true,
   })
-  serie: string
+  name: string
 
   @Prop({
     type: String,

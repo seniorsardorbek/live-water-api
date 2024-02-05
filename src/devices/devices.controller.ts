@@ -1,34 +1,37 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
-  ValidationPipe,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common'
-import { DevicesService } from './devices.service'
-import { CreateDeviceDto } from './dto/create-device.dto'
-import { UpdateDeviceDto } from './dto/update-device.dto'
-import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
-import { DeviceQueryDto } from './dto/device.query.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags } from '@nestjs/swagger'
+import { multerOptions } from 'src/_shared/multer.options'
+import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { CustomRequest } from 'src/_shared/response'
 import { IsLoggedIn } from 'src/auth/is-loggin.guard'
-import { HasRole } from 'src/auth/has-roles.guard'
-
+import { DevicesService } from './devices.service'
+import { CreateDeviceDto } from './dto/create-device.dto'
+import { DeviceQueryDto } from './dto/device.query.dto'
+import { UpdateDeviceDto } from './dto/update-device.dto'
 @Controller('devices')
 @ApiTags('Device')
 export class DevicesController {
   constructor (private readonly devicesService: DevicesService) {}
-
   @Post()
-  create (@Body() createDeviceDto: CreateDeviceDto) {
-    return this.devicesService.create(createDeviceDto)
+  create (
+    @Body() createDeviceDto: CreateDeviceDto,
+  ) {
+    return this.devicesService.create(createDeviceDto, )
   }
 
   @Get()
@@ -43,8 +46,8 @@ export class DevicesController {
 
   @UseGuards(IsLoggedIn)
   @Get('/user')
-  userAllDevices (@Req() req: CustomRequest ,@Query() query: QueryDto) {
-    return this.devicesService.oneUserDevices(req ,  query)
+  userAllDevices (@Req() req: CustomRequest, @Query() query: QueryDto) {
+    return this.devicesService.oneUserDevices(req, query)
   }
   @Get('/:id')
   findOne (@Param(ValidationPipe) id: ParamIdDto) {
@@ -54,7 +57,7 @@ export class DevicesController {
   @Patch(':id')
   update (
     @Param(ValidationPipe) id: ParamIdDto,
-    @Body() updateDeviceDto: UpdateDeviceDto
+    @Body() updateDeviceDto: UpdateDeviceDto,
   ) {
     return this.devicesService.update(id, updateDeviceDto)
   }

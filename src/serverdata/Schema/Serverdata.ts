@@ -14,6 +14,7 @@ export class Serverdata {
     required: true,
   })
   device_privet_key: string
+
   @Prop({
     type: mongoose.SchemaTypes.ObjectId,
     required: true,

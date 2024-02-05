@@ -1,116 +1,155 @@
-import { BadRequestException, Injectable, Res } from '@nestjs/common'
+import { HttpService } from '@nestjs/axios'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { AxiosResponse } from 'axios'
 import { Model } from 'mongoose'
-import { Serverdata } from './Schema/Serverdata'
-import { CreateServerdatumDto } from './dto/create-serverdatum.dto'
-import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
+import { sendedDataFace } from 'src/_shared'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { PaginationResponse } from 'src/_shared/response'
-import { ServerdataQueryDto } from './dto/serverdata.query.dto'
-import { Response } from 'express'
-import { formatTimestamp } from 'src/_shared/utils'
-import * as XLSX from 'xlsx'
+import { getCurrentDateTime } from 'src/_shared/utils/utils'
+import { Basedata } from 'src/basedata/Schema/Basedatas'
+import { Device } from 'src/devices/Schema/Device'
+import { Serverdata } from './Schema/Serverdata'
+import { UpdateServerdatumDto } from './dto/update-serverdatum.dto'
+import { getDataFromDevice } from 'src/_shared/utils/passport.utils'
 
 @Injectable()
 export class ServerdataService {
   constructor (
-    @InjectModel(Serverdata.name)
-    private readonly serverdataModel: Model<Serverdata>
+    private httpService: HttpService,
+    @InjectModel(Device.name) private deviceModel: Model<Device>,
+    @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
+    @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
   ) {}
-  create (createServerdatumDto: CreateServerdatumDto) {
-    return this.serverdataModel.create(createServerdatumDto)
+  @Cron(CronExpression.EVERY_HOUR)
+  async create () {
+    try {
+      const devices = await this.deviceModel.find()
+      const date_in_ms = new Date().getTime()
+      devices.map(async (dev: any) => {
+        const { level, salinity, temperature } = await getDataFromDevice(dev.serie)
+        const baseData = await this.basedataModel.create({
+          salinity,
+          level,
+          temperature,
+          date_in_ms,
+          signal: 'good',
+          device: dev._id,
+        }).catch((error)=>{
+          console.log(error);
+        })
+        console.log(baseData);
+        this.fetchData(dev, baseData)
+      })
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async findAll ({ page }: QueryDto): Promise<PaginationResponse<Serverdata>> {
-    const { limit = 10, offset = 0 } = page || {}
-
-    const [result] = await this.serverdataModel
-      .aggregate([
-        {
-          $facet: {
-            data: [
-              { $sort: { created_at: -1 } },
-              { $skip: limit * offset },
-              { $limit: limit },
-            ],
-            total: [
-              {
-                $count: 'count',
-              },
-            ],
+    try {
+      const { limit = 10, offset = 0 } = page || {}
+      const [result] = await this.serverDataModel
+        .aggregate([
+          {
+            $facet: {
+              data: [
+                { $sort: { created_at: -1 } },
+                { $skip: limit * offset },
+                { $limit: limit },
+              ],
+              total: [
+                {
+                  $count: 'count',
+                },
+              ],
+            },
           },
-        },
-        {
-          $project: {
-            data: 1,
-            total: { $arrayElemAt: ['$total.count', 0] },
+          {
+            $project: {
+              data: 1,
+              total: { $arrayElemAt: ['$total.count', 0] },
+            },
           },
-        },
-      ])
-      .exec()
-    const { data, total =0 } = result
+        ])
+        .exec()
+      const { data, total } = result
 
-    return { data, limit, offset, total }
+      return { data, limit, offset, total }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
   }
 
   findOne ({ id }: ParamIdDto) {
-    return this.serverdataModel.findById(id).populate('basedata')
+    try {
+      return this.serverDataModel.findById(id).populate('basedata')
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
   }
 
   async update ({ id }: ParamIdDto, updateServerdatumDto: UpdateServerdatumDto) {
-    const updated = await this.serverdataModel.findByIdAndUpdate(
-      id,
-      updateServerdatumDto,
-      { new: true }
-    )
-    if (!updated) {
-      throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
-    } else {
-      return { msg: 'Muvaffaqqiyatli yangilandi.' }
+    try {
+      const updated = await this.serverDataModel.findByIdAndUpdate(
+        id,
+        updateServerdatumDto,
+        { new: true }
+      )
+      if (!updated) {
+        throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
+      } else {
+        return { msg: 'Muvaffaqqiyatli yangilandi.' }
+      }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
 
   async remove ({ id }: ParamIdDto) {
-    const removed = await this.serverdataModel.findByIdAndDelete(id)
-    if (!removed) {
-      throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
-    } else {
-      return { msg: "Muvaffaqqiyatli o'chirildi." }
+    try {
+      const removed = await this.serverDataModel.findByIdAndDelete(id)
+      if (!removed) {
+        throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
+      } else {
+        return { msg: "Muvaffaqqiyatli o'chirildi." }
+      }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
 
-  async xlsx ({ filter }: ServerdataQueryDto, @Res() res: Response) {
-    const { start, end, device } = filter || {}
-    const query: any = {}
-    if (start) {
-      query.date_in_ms = query.date_in_ms || {}
-      query.date_in_ms.$gte = start
+  fetchData (dev: Device, basedata: any) {
+    const { level, salinity, temperature, date_in_ms } = basedata
+    const url = 'http://89.236.195.198:3010'
+    const data: sendedDataFace = {
+      code: dev.device_privet_key,
+      data: {
+        level,
+        meneral: salinity,
+        temperatyra: temperature,
+        vaqt: getCurrentDateTime(date_in_ms),
+      },
     }
+    this.httpService
+      .post(url, data, { headers: { 'Content-Type': 'application/json' } })
+      .toPromise()
+      .then(res => {
+        this.saveData(basedata, data , res)
+      })
+      .catch(err => {
+        this.saveData(basedata,data , err)
+      })
+  }
 
-    if (end) {
-      query.date_in_ms = query.date_in_ms || {}
-      query.date_in_ms.$lte = end
-    }
-    if (device) {
-      query.device = device
-    }
-    const data = await this.serverdataModel.find({ ...query }).exec() 
-    const jsonData = data.map((item: any) => {
-      const obj = item.toObject()
-      obj._id = item._id.toString()
-      obj.device = item.device.toString()
-      obj.date_in_ms = formatTimestamp(item.date_in_ms)
-      return obj
+  async saveData (basedata: any, data , res: AxiosResponse) {
+    this.serverDataModel.create({
+      basedata: basedata?._id,
+      message:res.data?.message || 'Malumotlarni serverga yuborishda server tomondan xatolik',
+      device_privet_key: data.code,
+      send_data_in_ms: basedata.date_in_ms,
+      status_code: res?.data?.status==='success'? 200:res.data?.status==='error'?404:500,
     })
-    const ws = XLSX.utils.json_to_sheet(jsonData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'DataSheet')
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' })
-    res.setHeader('Content-Disposition', 'attachment; filename=basedata.xlsx')
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    res.send(excelBuffer)
   }
 }

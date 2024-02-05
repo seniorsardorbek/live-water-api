@@ -10,66 +10,90 @@ import { UpdateUserDto } from './dto/update-user.dto'
 const saltOrRounds = 12
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-  async create(data: CreateUserDto) {
-    const username = await this.userModel.findOne({ username: data.username })
-    if (username) {
-      throw new BadRequestException({ msg: 'Username allqachon foydalanilgan' })
+  constructor (@InjectModel(User.name) private userModel: Model<User>) {}
+  async create (data: CreateUserDto) {
+    try {
+      const username = await this.userModel.findOne({ username: data.username })
+      if (username) {
+        throw new BadRequestException({
+          msg: 'Username allqachon foydalanilgan',
+        })
+      }
+      data.password = await bcrypt.hash(data.password, saltOrRounds)
+      return this.userModel.create(data)
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
-    data.password = await bcrypt.hash(data.password, saltOrRounds)
-    return this.userModel.create(data)
   }
 
-  async findAll({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
-    const { limit = 10, offset = 0 } = page || {}
-    const search = q
-      ? {
-          username: {
-            $regex: q,
-            $options: 'i',
-          },
+  async findAll ({ page, q }: QueryDto): Promise<PaginationResponse<User>> {
+    try {
+      const { limit = 10, offset = 0 } = page || {}
+      const search = q
+        ? {
+            username: {
+              $regex: q,
+              $options: 'i',
+            },
+          }
+        : {}
+      const total = await this.userModel.find({ ...search }).countDocuments()
+      const data = await this.userModel
+        .find({ ...search })
+        .populate([{ path: 'devices', select: 'serie -owner' }])
+        .select('-password')
+        .limit(limit)
+        .skip(limit * offset)
+      return { data, limit, offset, total }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
+  }
+
+  findOne ({ id }: ParamIdDto) {
+    try {
+      const user = this.userModel
+        .findById(id)
+        .populate([{ path: 'devices', select: 'serie -owner' }])
+        .select('-password')
+      return user
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
+  }
+
+  async update ({ id }: ParamIdDto, updateUserDto: UpdateUserDto) {
+    try {
+      if (updateUserDto.password) {
+        updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10)
+      }
+      const updated = await this.userModel.findByIdAndUpdate(
+        id,
+        updateUserDto,
+        {
+          new: true,
         }
-      : {}
-
-    const total = await this.userModel.find({ ...search }).countDocuments()
-
-    const data = await this.userModel
-      .find({ ...search })
-      .populate([{ path: 'devices', select: 'port serie ip_address -owner' }])
-      .select('-password')
-      .limit(limit)
-      .skip(limit * offset)
-    return { data, limit, offset, total }
-  }
-
-  findOne({ id }: ParamIdDto) {
-    const user = this.userModel
-      .findById(id)
-      .populate([{ path: 'devices', select: 'port serie ip_address -owner' }])
-      .select('-password')
-    return user
-  }
-
-  async update({ id }: ParamIdDto, updateUserDto: UpdateUserDto) {
-    if (updateUserDto.password) {
-      updateUserDto.password = bcrypt.hashSync(updateUserDto.password, 10)
-    }
-    const updated = await this.userModel.findByIdAndUpdate(id, updateUserDto, {
-      new: true,
-    })
-    if (!updated) {
-      throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })
-    } else {
-      return { msg: 'Muvaffaqqiyatli yangilandi.' }
+      )
+      if (!updated) {
+        throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })
+      } else {
+        return { msg: 'Muvaffaqqiyatli yangilandi.' }
+      }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
 
-  async remove({ id }: ParamIdDto) {
-    const removed = await this.userModel.findByIdAndDelete(id)
-    if (!removed) {
-      throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })
-    } else {
-      return { msg: "Muvaffaqqiyatli o'chirildi." }
+  async remove ({ id }: ParamIdDto) {
+    try {
+      const removed = await this.userModel.findByIdAndDelete(id)
+      if (!removed) {
+        throw new BadRequestException({ msg: 'Foydalanuvchi mavjud emas.' })
+      } else {
+        return { msg: "Muvaffaqqiyatli o'chirildi." }
+      }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
 }

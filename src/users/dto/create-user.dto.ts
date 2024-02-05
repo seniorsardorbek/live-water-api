@@ -1,14 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsEnum,
-  IsMongoId,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator'
-import { ObjectId } from 'mongoose'
-import { UserRole } from 'src/_shared/enums'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsMongoId, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { ObjectId } from 'mongoose';
+import { UserRole } from 'src/_shared/enums';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -17,47 +10,48 @@ export class CreateUserDto {
   })
   @IsString()
   @IsNotEmpty()
-  first_name: string
+  first_name: string;
 
   @ApiProperty({
-    title: 'Lastname Name',
+    title: 'Last Name',
     example: 'Samijonov',
   })
   @IsString()
   @IsNotEmpty()
-  last_name: string
+  last_name: string;
 
   @ApiProperty({
-    title: 'username unique',
+    title: 'Username (unique)',
     example: 'sardorbek01',
   })
   @IsString()
   @IsNotEmpty()
-  username: string
+  username: string;
 
   @ApiProperty({
-    title: 'password min8 max20',
+    title: 'Password (min 8 characters, max 20 characters)',
     example: 'uirebe9885 ',
   })
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(20)
-  password: string
+  password: string;
 
   @ApiProperty({
-    title: 'region Id mongoId',
-    example: 'b7912hfwgwi83',
+    title: 'Region ID (MongoDB ObjectId)',
+    example: '612aa3bc93ecef4c4f4a66d4',
   })
   @IsNotEmpty()
   @IsMongoId()
-  region: ObjectId
+  region: ObjectId;
 
   @ApiProperty({
-    title: 'role operator | admin',
+    title: 'Role (operator or admin)',
     example: 'operator',
+    enum: UserRole,
   })
   @IsNotEmpty()
   @IsEnum(UserRole)
-  role: UserRole
+  role: UserRole;
 }

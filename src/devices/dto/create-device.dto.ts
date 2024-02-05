@@ -1,67 +1,64 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { Transform } from 'class-transformer'
-import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator'
-import { ObjectId } from 'mongoose'
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { ObjectId } from 'mongoose';
 
 export class CreateDeviceDto {
   @ApiProperty({
-    title: 'Name ',
-    example: 'Andijon birinchi daha',
-  })
-  @IsNotEmpty()
-  @IsString()
-  name: string
-
-
-  @ApiProperty({
-    title: 'serie  unique',
+    title: 'Serie (unique)',
     example: '7620fw073',
   })
   @IsNotEmpty()
   @IsString()
-  serie: string
+  serie: string;
 
   @ApiProperty({
-    title: 'device private key unique',
+    title: 'Name',
+    example: '15',
+  })
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({
+    title: 'Device Private Key (unique)',
     example: 'heuwihfb',
   })
   @IsNotEmpty()
   @IsString()
-  device_privet_key: string
-
- 
+  device_privet_key: string;
 
   @ApiProperty({
-    title: 'lat',
+    title: 'Latitude',
     example: '53.6881488',
   })
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  lat: number
+  lat: number;
 
   @ApiProperty({
-    title: 'long',
+    title: 'Longitude',
     example: '56.588925',
   })
   @IsNotEmpty()
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  long: number
+  long: number;
 
   @ApiProperty({
-    title: 'region mongoId ',
+    title: 'Region ID (MongoDB ObjectId)',
     example: '658c3bf023576fadfe9dc157',
   })
   @IsNotEmpty()
   @IsMongoId()
-  region: ObjectId
+  region: ObjectId;
 
   @ApiProperty({
-    title: 'owner ',
+    title: 'Owner ID (MongoDB ObjectId)',
     example: '658c3bf023576fadfe9dc157',
   })
   @IsNotEmpty()
   @IsMongoId()
-  owner: ObjectId
+  owner: ObjectId;
 }
