@@ -11,7 +11,22 @@ export class CreateBasedatumDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   level: number
-
+  @ApiProperty({
+    title: 'Temperature',
+    example: 1,
+  })
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  temperature: number
+  @ApiProperty({
+    title: 'salinity',
+    example: 1,
+  })
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  salinity: number
 
   @ApiProperty({
     title: 'Serie',
@@ -19,4 +34,5 @@ export class CreateBasedatumDto {
   })
   @IsNotEmpty()
   serie: string
+ 
 }

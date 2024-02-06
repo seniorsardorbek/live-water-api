@@ -6,7 +6,7 @@ import { Status } from 'src/_shared/enums'
   versionKey: false,
   timestamps: {
     createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    updatedAt: false,
   },
 })
 export class Basedata {

@@ -35,14 +35,14 @@ import { CustomRequest } from 'src/_shared/response'
 export class BasedataController {
   constructor(private readonly basedataService: BasedataService) {}
   // !
-  // @Post()
-  // @ApiCreatedResponse({
-  //   description: 'Automatically generated basedata ',
-  //   type: Basedata,
-  // })
-  // create(@Body() createBasedatumDto: CreateBasedatumDto) {
-  //   return this.basedataService.create(createBasedatumDto)
-  // }
+  @Post()
+  @ApiCreatedResponse({
+    description: 'Automatically generated basedata ',
+    type: Basedata,
+  })
+  create(@Body() createBasedatumDto: CreateBasedatumDto) {
+    return this.basedataService.create(createBasedatumDto)
+  }
   // !
   @Get()
   @ApiOperation({

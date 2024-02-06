@@ -4,7 +4,7 @@ import { Response } from 'express'
 import { Model } from 'mongoose'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { CustomRequest, PaginationResponse } from 'src/_shared/response'
-import { formatTimestamp } from 'src/_shared/utils/utils'
+import { formatTimestamp, getCurrentDateTime } from 'src/_shared/utils/utils'
 import * as XLSX from 'xlsx'
 import { Basedata } from './Schema/Basedatas'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
@@ -12,47 +12,41 @@ import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
 import { Device } from 'src/devices/Schema/Device'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
 import { getDataFromDevice } from 'src/_shared/utils/passport.utils'
-import { DataItem } from 'src/_shared'
+import { DataItem, sendedDataFace } from 'src/_shared'
+import { Serverdata } from 'src/serverdata/Schema/Serverdata'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { HttpService } from '@nestjs/axios'
+import { AxiosResponse } from 'axios'
 
 @Injectable()
 export class BasedataService {
   constructor (
+    private httpService: HttpService,
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
-    @InjectModel(Device.name) private deviceModel: Model<Device>
+    @InjectModel(Device.name) private deviceModel: Model<Device>,
+    @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
   ) {}
-  // async create (createBasedata: CreateBasedatumDto) {
-  //   try {
-  //     const device = await this.deviceModel.findOne({
-  //       serie: createBasedata.serie,
-  //     })
-  //     if (!device) {
-  //       throw new BadRequestException({ msg: 'Device not found!' })
-  //     }
-  //     const deviceLevel =
-  //       createBasedata.level > 59
-  //         ? 59
-  //         : createBasedata.level < 5
-  //         ? 5
-  //         : createBasedata.level
-  //     const date_in_ms = new Date().getTime()
-  //     const signal = deviceLevel ? 'good' : 'nosignal'
-  //     const { volume, pressure } = await getDataFromDevice(
-  //       deviceLevel,
-  //       createBasedata.serie
-  //     )
-  //     this.basedataModel.create({
-  //       date_in_ms,
-  //       signal,
-  //       level: createBasedata.level,
-  //       device: device._id,
-  //       volume,
-  //       pressure,
-  //     })
-  //     return { msg: 'Malumot saqlandi!' }
-  //   } catch (error) {
-  //     throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
-  //   }
-  // }
+  async create (createBasedata: CreateBasedatumDto) {
+    try {
+      const date_in_ms = new Date().getTime()
+      const dev = await this.deviceModel.findOne({
+        serie: createBasedata.serie,
+      }).lean()
+      if(!dev) throw new BadRequestException({msg:"Qurilma topilmadi" })
+      const baseData = await this.basedataModel.create({
+        salinity: createBasedata.salinity,
+        level: createBasedata.level,
+        temperature: createBasedata.temperature,
+        date_in_ms, 
+        signal: 'good',
+        device: dev._id,
+      })
+      this.fetchData(dev, baseData)
+      return baseData
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring...", error })
+    }
+  }
 
   // ! Barcha ma'lumotlarni olish uchun
   async findAll ({
@@ -274,6 +268,66 @@ export class BasedataService {
       res.send(excelBuffer)
     } catch (error) {
       throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async createAuto () {
+    try {
+      const devices = await this.deviceModel.find()
+      const date_in_ms = new Date().getTime()
+      devices.map(async (dev: any) => {
+        const { level, salinity, temperature } = await getDataFromDevice(
+          dev.serie
+        )
+        const baseData = await this.basedataModel.create({
+          salinity,
+          level,
+          temperature,
+          date_in_ms,
+          signal: 'good',
+          device: dev._id,
+        })
+        this.fetchData(dev, baseData)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  fetchData (dev: Device, basedata: any) {
+    const { level, salinity, temperature, date_in_ms } = basedata
+    const url = 'http://89.236.195.198:3010'
+    const data: sendedDataFace = {
+      code: dev.device_privet_key,
+      data: {
+        level,
+        meneral: salinity,
+        temperatyra: temperature,
+        vaqt: getCurrentDateTime(date_in_ms),
+      },
+    }
+    this.httpService
+      .post(url, data, { headers: { 'Content-Type': 'application/json' } })
+      .toPromise()
+      .then(res => {
+        this.saveData(basedata, data, res)
+      })
+      .catch(err => {
+        this.saveData(basedata, data, err)
+      })
+  }
+
+  async saveData (basedata: any, data, res: AxiosResponse) {
+    try {
+      this.serverDataModel.create({
+        basedata: basedata?._id,
+        message:res.data?.code ===23000 ? "Saqlandi." :  res.data?.message  || "Saqlandi",
+        device_privet_key: data.code,
+        send_data_in_ms: basedata.date_in_ms,
+        status_code: res.status || 200,
+      })
+    } catch (error) {
+      console.log(error);
     }
   }
 }
