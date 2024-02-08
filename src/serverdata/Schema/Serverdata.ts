@@ -4,8 +4,8 @@ import mongoose, { ObjectId } from 'mongoose'
 @Schema({
   versionKey: false,
   timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: false,
+    updatedAt: false,
   },
 })
 export class Serverdata {

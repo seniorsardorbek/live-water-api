@@ -5,7 +5,7 @@ import { Status } from 'src/_shared/enums'
 @Schema({
   versionKey: false,
   timestamps: {
-    createdAt: 'created_at',
+    createdAt: false,
     updatedAt: false,
   },
 })

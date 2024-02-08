@@ -26,6 +26,5 @@ interface DataItem {
   date_in_ms: number;
   signal: string;
   device: string;
-  created_at: string;
-  updated_at: string;
+
 }

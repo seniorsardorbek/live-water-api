@@ -56,7 +56,7 @@ export class BasedataService {
   }: BasedataQueryDto): Promise<PaginationResponse<Basedata>> {
     try {
       const { limit = 10, offset = 0 } = page || {}
-      const { by = 'created_at', order = 'desc' } = sort || {}
+      const { by = 'date_in_ms', order = 'desc' } = sort || {}
       const { start, end, device, region } = filter || {}
       const query: any = {}
       if (start) {
@@ -122,7 +122,7 @@ export class BasedataService {
   ) {
     try {
       const { limit = 10, offset = 0 } = page || {}
-      const { by = 'created_at', order = 'desc' } = sort || {}
+      const { by = 'date_in_ms', order = 'desc' } = sort || {}
       const { start, end, device } = filter || {}
       const query: any = {}
       if (start) {
@@ -245,7 +245,7 @@ export class BasedataService {
       }
       const data = await this.basedataModel
         .find({ ...query })
-        .sort({ created_at: -1 })
+        .sort({date_in_ms: -1 })
         .populate([{ path: 'device', select: 'serie name' }])
         .limit(limit)
         .exec()

@@ -25,10 +25,10 @@ class Sort {
   @ApiProperty({
     title: 'Sort by',
     example: 'level',
-    enum: ['level', 'salinity', 'volume', 'pressure', 'created_at', 'updated_at'],
+    enum: ['level', 'salinity', 'pressure'],
   })
   @IsNotEmpty()
-  @IsIn(['level', 'salinity', 'volume', 'pressure', 'created_at', 'updated_at'])
+  @IsIn(['level', 'salinity',  'pressure'])
   by: string;
 }
 

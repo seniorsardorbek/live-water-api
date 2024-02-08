@@ -20,7 +20,7 @@ export class ServerdataService {
           {
             $facet: {
               data: [
-                { $sort: { created_at: -1 } },
+                { $sort: { send_data_in_ms: -1 } },
                 { $skip: limit * offset },
                 { $limit: limit },
               ],
