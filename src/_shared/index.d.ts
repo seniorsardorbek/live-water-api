@@ -1,3 +1,5 @@
+import { ObjectId } from "mongoose"
+
 export interface passport {
   level: number
   number: number
@@ -17,7 +19,7 @@ export interface sendedDataFace {
 }
 
 interface DataItem {
-  _id: string;
+  _id: ObjectId;
   serie: string;
   name: string;
   level: number;
@@ -25,6 +27,8 @@ interface DataItem {
   pressure: number;
   date_in_ms: number;
   signal: string;
-  device: string;
-
+  device: {
+    name: string; 
+    serie: string;
+  };
 }

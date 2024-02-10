@@ -1,22 +1,21 @@
+import { HttpService } from '@nestjs/axios'
 import { BadRequestException, Injectable, Res } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { AxiosResponse } from 'axios'
 import { Response } from 'express'
 import { Model } from 'mongoose'
+import { DataItem, sendedDataFace } from 'src/_shared'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { CustomRequest, PaginationResponse } from 'src/_shared/response'
+import { getDataFromDevice } from 'src/_shared/utils/passport.utils'
 import { formatTimestamp, getCurrentDateTime } from 'src/_shared/utils/utils'
+import { Device } from 'src/devices/Schema/Device'
+import { Serverdata } from 'src/serverdata/Schema/Serverdata'
 import * as XLSX from 'xlsx'
 import { Basedata } from './Schema/Basedatas'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
-import { UpdateBasedatumDto } from './dto/update-basedatum.dto'
-import { Device } from 'src/devices/Schema/Device'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
-import { getDataFromDevice } from 'src/_shared/utils/passport.utils'
-import { DataItem, sendedDataFace } from 'src/_shared'
-import { Serverdata } from 'src/serverdata/Schema/Serverdata'
-import { Cron, CronExpression } from '@nestjs/schedule'
-import { HttpService } from '@nestjs/axios'
-import { AxiosResponse } from 'axios'
 
 @Injectable()
 export class BasedataService {
@@ -29,22 +28,27 @@ export class BasedataService {
   async create (createBasedata: CreateBasedatumDto) {
     try {
       const date_in_ms = new Date().getTime()
-      const dev = await this.deviceModel.findOne({
-        serie: createBasedata.serie,
-      }).lean()
-      if(!dev) throw new BadRequestException({msg:"Qurilma topilmadi" })
+      const dev = await this.deviceModel
+        .findOne({
+          serie: createBasedata.serie,
+        })
+        .lean()
+      if (!dev) throw new BadRequestException({ msg: 'Qurilma topilmadi' })
       const baseData = await this.basedataModel.create({
         salinity: createBasedata.salinity,
         level: createBasedata.level,
         temperature: createBasedata.temperature,
-        date_in_ms, 
+        date_in_ms,
         signal: 'good',
         device: dev._id,
       })
       this.fetchData(dev, baseData)
       return baseData
     } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring...", error })
+      throw new BadRequestException({
+        msg: "Keyinroq urinib ko'ring...",
+        error,
+      })
     }
   }
 
@@ -88,30 +92,73 @@ export class BasedataService {
     }
   }
 
-  async lastData ({ page }: QueryDto) {
+  async lastData () {
     try {
-      const now = new Date() // current time in local timezone
+      const lastAdded: DataItem | null = await this.basedataModel
+        .findOne()
+        .sort({ date_in_ms: -1 })
+        .lean()
+      if (!lastAdded) {
+        return []
+      }
+      const now = new Date(lastAdded.date_in_ms)
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000) // time one hour ago
-
       const timestampOneHourAgo = oneHourAgo.getTime() // timestamp of one hour ago in milliseconds
 
       const data: DataItem[] = await this.basedataModel
-        .find({
-          date_in_ms: { $gte: timestampOneHourAgo },
-        })
-        .populate([{ path: 'device', select: 'serie name' }])
+        .find({ date_in_ms: { $gte: timestampOneHourAgo } })
+        .populate('device', 'serie name') // Populate the 'device' field with 'serie' and 'name'
         .lean()
       let uniqueSeriesMap = {}
 
       data.forEach(item => {
-        const serie = item.device
+        const serie = item.device.serie
         uniqueSeriesMap[serie] = item
       })
 
       let uniqueSeriesArray = Object.values(uniqueSeriesMap)
       return uniqueSeriesArray
     } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+      throw new BadRequestException({
+        msg: "Keyinroq urinib ko'ring...",
+        error,
+      })
+    }
+  }
+  async operatorLastData (req: CustomRequest) {
+    try {
+      const owner = req.user.id
+      const lastAdded: DataItem | null = await this.basedataModel
+        .findOne()
+        .sort({ date_in_ms: -1 })
+        .lean()
+      if (!lastAdded) {
+        return []
+      }
+      const devices = await this.deviceModel.find({ owner }).lean()
+      const devices_id = devices.map(device => device._id)
+      const now = new Date(lastAdded.date_in_ms)
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000) // time one hour ago
+      const timestampOneHourAgo = oneHourAgo.getTime() // timestamp of one hour ago in milliseconds
+
+      const data: DataItem[] = await this.basedataModel
+        .find({ date_in_ms: { $gte: timestampOneHourAgo } ,device: { $in: devices_id }   })
+        .populate('device', 'serie name') // Populate the 'device' field with 'serie' and 'name'
+        .lean()
+      let uniqueSeriesMap = {}
+
+      data.forEach(item => {
+        const serie = item.device.serie
+        uniqueSeriesMap[serie] = item
+      })
+
+      let uniqueSeriesArray = Object.values(uniqueSeriesMap)
+      return uniqueSeriesArray
+    } catch (error) {
+      throw new BadRequestException({
+        msg: "Keyinroq urinib ko'ring...",
+        error,
+      })
     }
   }
 
@@ -188,23 +235,7 @@ export class BasedataService {
     }
   }
 
-  // ! Bitta mal'lumotni yangilash uchun
-  async update ({ id }: ParamIdDto, updateBasedatumDto: UpdateBasedatumDto) {
-    try {
-      const updated = await this.basedataModel.findByIdAndUpdate(
-        id,
-        updateBasedatumDto,
-        { new: true }
-      )
-      if (updated) {
-        return { msg: 'Muvaffaqqiyatli yangilandi!' }
-      } else {
-        return { msg: 'Yangilanishda xatolik!' }
-      }
-    } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
-    }
-  }
+
 
   //! Bitta mal'lumotni o'chirish uchun
   async remove ({ id }: ParamIdDto) {
@@ -245,8 +276,8 @@ export class BasedataService {
       }
       const data = await this.basedataModel
         .find({ ...query })
-        .sort({date_in_ms: -1 })
-        .populate([{ path: 'device', select: 'serie name' }])
+        .sort({ date_in_ms: -1 })
+        .populate([{ path: 'device', select: 'serie' }])
         .limit(limit)
         .exec()
       const jsonData = data.map((item: any) => {
@@ -321,13 +352,16 @@ export class BasedataService {
     try {
       this.serverDataModel.create({
         basedata: basedata?._id,
-        message:res.data?.code ===23000 ? "Saqlandi." :  res.data?.message  || "Saqlandi",
+        message:
+          res.data?.code === 23000
+            ? 'Saqlandi.'
+            : res.data?.message || 'Saqlandi',
         device_privet_key: data.code,
         send_data_in_ms: basedata.date_in_ms,
         status_code: res.status || 200,
       })
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 }

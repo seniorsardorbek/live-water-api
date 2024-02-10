@@ -58,8 +58,14 @@ export class BasedataController {
     return this.basedataService.xlsx(query, res)
   }
   @Get('last-updated')
-  lastData(@Query() query: QueryDto) {
-    return this.basedataService.lastData(query)
+  lastData() {
+    return this.basedataService.lastData()
+  }
+  @SetRoles('operator')
+  @UseGuards(IsLoggedIn , HasRole)
+  @Get('operatorlastdata')
+  operatorLastData(@Req() req : CustomRequest) {
+    return this.basedataService.operatorLastData(req)
   }
   @SetRoles('operator')
   @UseGuards(IsLoggedIn , HasRole)
@@ -92,21 +98,7 @@ export class BasedataController {
   findOne(@Param(ValidationPipe) id: ParamIdDto) {
     return this.basedataService.findOne(id)
   }
-  // !
-  @Patch(':id')
-  @ApiOperation({
-    summary: 'id orqali yangilash',
-    description: 'id orqali yangilash.',
-  })
-  @ApiResponse({ status: 200, description: 'Muvafqqattiyatli yangilandi' })
-  @ApiResponse({ status: 404, description: 'Mavjud emas.' })
-  update(
-    @Param(ValidationPipe) id: ParamIdDto,
-    @Body() updateBasedatumDto: UpdateBasedatumDto
-  ) {
-    return this.basedataService.update(id, updateBasedatumDto)
-  }
-  // !
+
   @Delete(':id')
   remove(@Param(ValidationPipe) id: ParamIdDto) {
     return this.basedataService.remove(id)
