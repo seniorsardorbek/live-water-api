@@ -94,14 +94,8 @@ export class BasedataService {
 
   async lastData () {
     try {
-      const lastAdded: DataItem | null = await this.basedataModel
-        .findOne()
-        .sort({ date_in_ms: -1 })
-        .lean()
-      if (!lastAdded) {
-        return []
-      }
-      const now = new Date(lastAdded.date_in_ms)
+     
+      const now = new Date()
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000) // time one hour ago
       const timestampOneHourAgo = oneHourAgo.getTime() // timestamp of one hour ago in milliseconds
 
