@@ -18,8 +18,6 @@ export async function getDataFromDevice (serie: string) {
     const ind = series.findIndex(ser => ser === serie)
     if (ind < 0) return { level: 0, salinity: 0, temperature: 0 }
     const random = gRN(1, 10)
-    console.log(getRandomNumber(0.01, 0.3))
-    console.log(menerals[ind] * 0.5)
     const level = levels[ind] - 5 + random
     const salinity = parseFloat(
       (
@@ -28,7 +26,6 @@ export async function getDataFromDevice (serie: string) {
         menerals[ind] * getRandomNumber(0.01, 0.2)
       ).toFixed(2)
     )
-    console.log({ level, salinity })
     return { level, salinity, temperature: 0 }
   } catch (error) {
     console.log(error)

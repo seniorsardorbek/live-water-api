@@ -43,7 +43,14 @@ export class BasedataController {
   create(@Body() createBasedatumDto: CreateBasedatumDto) {
     return this.basedataService.create(createBasedatumDto)
   }
-  // !
+  @Get('last-updated')
+  @ApiOperation({
+    summary: 'Get last Added basedata',
+  })
+  lastData() {
+    return this.basedataService.lastData()
+  }
+ 
   @Get()
   @ApiOperation({
     summary: 'Get all  basedata',
@@ -52,27 +59,13 @@ export class BasedataController {
   findAll(@Query() query: BasedataQueryDto) {
     return this.basedataService.findAll(query)
   }
-  // !
+
   @Get('xlsx')
   async exportToExcel(@Res() res: Response, @Query() query: BasedataQueryDto) {
     return this.basedataService.xlsx(query, res)
   }
-  @Get('last-updated')
-  lastData() {
-    return this.basedataService.lastData()
-  }
-  @SetRoles('operator')
-  @UseGuards(IsLoggedIn , HasRole)
-  @Get('operatorlastdata')
-  operatorLastData(@Req() req : CustomRequest) {
-    return this.basedataService.operatorLastData(req)
-  }
-  @SetRoles('operator')
-  @UseGuards(IsLoggedIn , HasRole)
-  @Get('operator')
-  operatorDeviceBaseData(@Query() query: BasedataQueryDto , @Req() req:  CustomRequest) {
-    return this.basedataService.operatorDeviceBaseData(query , req )
-  }
+  
+
   // !
   @Get('device/:id')
   @ApiOperation({
@@ -98,9 +91,31 @@ export class BasedataController {
   findOne(@Param(ValidationPipe) id: ParamIdDto) {
     return this.basedataService.findOne(id)
   }
-
-  @Delete(':id')
-  remove(@Param(ValidationPipe) id: ParamIdDto) {
-    return this.basedataService.remove(id)
+  //  ! Operator sections
+  @SetRoles('operator')
+  @UseGuards(IsLoggedIn, HasRole)
+  @Get('opr/constructorxlsx')
+  operatorDeviceBaseDataXLSX (
+    @Req() req: CustomRequest,
+    @Res() res: Response,
+    @Query() query: BasedataQueryDto
+  ) {
+    return this.basedataService.operatorDeviceBaseDataXLSX(req, query, res)
   }
+  @SetRoles('operator')
+  @UseGuards(IsLoggedIn, HasRole)
+  @Get('opr/lastadded')
+  operatorLastData (@Req() req: CustomRequest) {
+    return this.basedataService.lastDataOperator(req)
+  }
+  @SetRoles('operator')
+  @UseGuards(IsLoggedIn, HasRole)
+  @Get('opr/constructor')
+  operatorDeviceBaseData (
+    @Query() query: BasedataQueryDto,
+    @Req() req: CustomRequest
+  ) {
+    return this.basedataService.operatorDeviceBaseData(query, req)
+  }
+
 }

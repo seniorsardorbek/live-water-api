@@ -25,6 +25,7 @@ export class BasedataService {
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
   ) {}
+  // ?
   async create (createBasedata: CreateBasedatumDto) {
     try {
       const date_in_ms = new Date().getTime()
@@ -51,7 +52,7 @@ export class BasedataService {
       })
     }
   }
-
+  // ?
   // ! Barcha ma'lumotlarni olish uchun
   async findAll ({
     page,
@@ -91,10 +92,9 @@ export class BasedataService {
       throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
-
+  // ! Barcha ma'lumotlarni olish uchun
   async lastData () {
     try {
-     
       const now = new Date()
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000) // time one hour ago
       const timestampOneHourAgo = oneHourAgo.getTime() // timestamp of one hour ago in milliseconds
@@ -117,85 +117,6 @@ export class BasedataService {
         msg: "Keyinroq urinib ko'ring...",
         error,
       })
-    }
-  }
-  async operatorLastData (req: CustomRequest) {
-    try {
-      const owner = req.user.id
-      const lastAdded: DataItem | null = await this.basedataModel
-        .findOne()
-        .sort({ date_in_ms: -1 })
-        .lean()
-      if (!lastAdded) {
-        return []
-      }
-      const devices = await this.deviceModel.find({ owner }).lean()
-      const devices_id = devices.map(device => device._id)
-      const now = new Date(lastAdded.date_in_ms)
-      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000) // time one hour ago
-      const timestampOneHourAgo = oneHourAgo.getTime() // timestamp of one hour ago in milliseconds
-
-      const data: DataItem[] = await this.basedataModel
-        .find({ date_in_ms: { $gte: timestampOneHourAgo } ,device: { $in: devices_id }   })
-        .populate('device', 'serie name') // Populate the 'device' field with 'serie' and 'name'
-        .lean()
-      let uniqueSeriesMap = {}
-
-      data.forEach(item => {
-        const serie = item.device.serie
-        uniqueSeriesMap[serie] = item
-      })
-
-      let uniqueSeriesArray = Object.values(uniqueSeriesMap)
-      return uniqueSeriesArray
-    } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
-    }
-  }
-
-  // ! operator devices
-  async operatorDeviceBaseData (
-    { page, filter, sort }: BasedataQueryDto,
-    req: CustomRequest
-  ) {
-    try {
-      const { limit = 10, offset = 0 } = page || {}
-      const { by = 'date_in_ms', order = 'desc' } = sort || {}
-      const { start, end, device } = filter || {}
-      const query: any = {}
-      if (start) {
-        query.date_in_ms = query.date_in_ms || {}
-        query.date_in_ms.$gte = start
-      }
-      if (end) {
-        query.date_in_ms = query.date_in_ms || {}
-        query.date_in_ms.$lte = end
-      }
-      if (device) {
-        query.device = device
-      }
-      const owner = req.user.id
-      const devices = await this.deviceModel.find({ owner }).lean()
-      const devices_id = devices.map(device => device._id)
-      const total = await this.basedataModel
-        .find({ device: { $in: devices_id }, ...query })
-        .countDocuments()
-      const data = await this.basedataModel
-        .find({
-          device: { $in: devices_id },
-          ...query,
-        })
-        .sort({ [by]: order === 'desc' ? -1 : 1 })
-        .populate([{ path: 'device', select: 'serie name' }])
-        .limit(limit)
-        .skip(limit * offset)
-        .exec()
-      return { data, limit, offset, total }
-    } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
 
@@ -224,24 +145,6 @@ export class BasedataService {
   findOne ({ id }: ParamIdDto) {
     try {
       return this.basedataModel.findById(id)
-    } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
-    }
-  }
-
-
-
-  //! Bitta mal'lumotni o'chirish uchun
-  async remove ({ id }: ParamIdDto) {
-    try {
-      const removed = await this.basedataModel.findByIdAndDelete(id, {
-        new: true,
-      })
-      if (removed) {
-        return { msg: "Muvaffaqqiyatli o'chirildi!" }
-      } else {
-        return { msg: "O'chirilsihda xatolik!" }
-      }
     } catch (error) {
       throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
@@ -295,7 +198,128 @@ export class BasedataService {
       throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
+  // Operator
+  async lastDataOperator (req: CustomRequest) {
+    try {
+      const now = new Date()
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+      const timestampOneHourAgo = oneHourAgo.getTime()
+      const data: DataItem[] = await this.basedataModel
+        .find({ date_in_ms: { $gte: timestampOneHourAgo } })
+        .populate('device', 'serie name')
+        .lean()
+      let uniqueSeriesMap = {}
 
+      data.forEach(item => {
+        const serie = item.device.serie
+        uniqueSeriesMap[serie] = item
+      })
+
+      let uniqueSeriesArray = Object.values(uniqueSeriesMap)
+      return uniqueSeriesArray
+    } catch (error) {
+      throw new BadRequestException({
+        msg: "Keyinroq urinib ko'ring...",
+        error,
+      })
+    }
+  }
+  async operatorDeviceBaseData (
+    { page, filter, sort }: BasedataQueryDto,
+    req: CustomRequest
+  ) {
+    try {
+      const { limit = 10, offset = 0 } = page || {}
+      const { by = 'date_in_ms', order = 'desc' } = sort || {}
+      const { start, end, device } = filter || {}
+      const query: any = {}
+      if (start) {
+        query.date_in_ms = query.date_in_ms || {}
+        query.date_in_ms.$gte = start
+      }
+      if (end) {
+        query.date_in_ms = query.date_in_ms || {}
+        query.date_in_ms.$lte = end
+      }
+      if (device) {
+        query.device = device
+      }
+      const owner = req.user.id
+      const devices = await this.deviceModel.find({ owner }).lean()
+      const devices_id = devices.map(device => device._id)
+      const total = await this.basedataModel
+        .find({ device: { $in: devices_id }, ...query })
+        .countDocuments()
+      const data = await this.basedataModel
+        .find({
+          device: { $in: devices_id },
+          ...query,
+        })
+        .sort({ [by]: order === 'desc' ? -1 : 1 })
+        .populate([{ path: 'device', select: 'serie name' }])
+        .limit(limit)
+        .skip(limit * offset)
+        .exec()
+      return { data, limit, offset, total }
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
+  }
+  async operatorDeviceBaseDataXLSX (
+    req: CustomRequest,
+    { filter, page }: BasedataQueryDto,
+    res: Response
+  ) {
+    try {
+      const { start, end, device, region } = filter || {}
+      const { limit = 1000 } = page || {}
+      const query: any = {}
+      if (start) {
+        query.date_in_ms = query.date_in_ms || {}
+        query.date_in_ms.$gte = start
+      }
+      if (end) {
+        query.date_in_ms = query.date_in_ms || {}
+        query.date_in_ms.$lte = end
+      }
+      if (device) {
+        query.device = device
+      }
+      if (!device && region) {
+        const devices = await this.deviceModel.find({ region }).lean()
+        const devices_id = devices.map(device => device._id)
+        query.device = { $in: devices_id }
+      }
+      const owner = req.user.id
+      const devices = await this.deviceModel.find({ owner }).lean()
+      const devices_id = devices.map(device => device._id)
+      const data = await this.basedataModel
+        .find({ ...query, device: { $in: devices_id } })
+        .sort({ date_in_ms: -1 })
+        .populate([{ path: 'device', select: 'serie' }])
+        .limit(limit)
+        .exec()
+      const jsonData = data.map((item: any) => {
+        const obj = item.toObject()
+        obj._id = item?._id?.toString()
+        obj.device = item?.device?.serie
+        obj.date_in_ms = formatTimestamp(item?.date_in_ms)
+        return obj
+      })
+      const ws = XLSX.utils.json_to_sheet(jsonData)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'DataSheet')
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' })
+      res.setHeader('Content-Disposition', 'attachment; filename=basedata.xlsx')
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      )
+      res.send(excelBuffer)
+    } catch (error) {
+      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
+    }
+  }
   @Cron(CronExpression.EVERY_HOUR)
   async createAuto () {
     try {
