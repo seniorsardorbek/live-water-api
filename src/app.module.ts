@@ -10,10 +10,14 @@ import { DevicesModule } from './devices/devices.module'
 import { RegionsModule } from './regions/regions.module'
 import { ServerdataModule } from './serverdata/serverdata.module'
 import { UsersModule } from './users/users.module'
+import { MqttModule } from './mqtt/mqtt.module'
+import { CacheModule } from '@nestjs/cache-manager'
 
 @Module({
   imports: [
     MongooseModule.forRoot(`${config.db.host}/${config.db.name}`),
+    
+    MqttModule,
     UsersModule,
     RegionsModule,
     ScheduleModule.forRoot(),

@@ -29,13 +29,7 @@ export class ServerdataController {
     return this.serverdataService.findOne(id)
   }
 
-  @Patch(':id')
-  update(
-    @Param(ValidationPipe) id: ParamIdDto,
-    @Body() updateServerdatumDto: UpdateServerdatumDto
-  ) {
-    return this.serverdataService.update(id, updateServerdatumDto)
-  }
+
 
   @Delete(':id')
   remove(@Param(ValidationPipe) id: ParamIdDto) {

@@ -1,14 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { FlattenMaps, Model, ObjectId } from 'mongoose'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { CustomRequest, PaginationResponse } from 'src/_shared/response'
 import {
-  convertArrayToJSON,
-  deleteFile,
-  write,
-  xlsxToArray,
+  deleteFile
 } from 'src/_shared/utils/passport.utils'
+import { MqttService } from 'src/mqtt/mqtt.service'
 import { Device } from './Schema/Device'
 import { CreateDeviceDto } from './dto/create-device.dto'
 import { DeviceQueryDto } from './dto/device.query.dto'
@@ -16,7 +14,19 @@ import { UpdateDeviceDto } from './dto/update-device.dto'
 
 @Injectable()
 export class DevicesService {
-  constructor (@InjectModel(Device.name) private deviceModel: Model<Device>) {}
+  constructor (
+    @InjectModel(Device.name) private deviceModel: Model<Device>,
+    readonly MqttService: MqttService
+  ) {
+    this.deviceModel
+      .find()
+      .lean()
+      .then(devices => {
+        devices.map((device: any) => {
+          return this.MqttService.subscribe(`${device?.serie}/up`)
+        })
+      })
+  }
 
   async create (createDeviceDto: CreateDeviceDto) {
     try {
@@ -33,12 +43,16 @@ export class DevicesService {
           }  already exists!`,
         })
       }
+      this.MqttService.subscribe(`${createDeviceDto?.serie}/up`)
       return this.deviceModel.create(createDeviceDto)
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -59,10 +73,13 @@ export class DevicesService {
 
       return { data, limit, offset, total }
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -74,10 +91,13 @@ export class DevicesService {
       const data = await this.deviceModel.find(filter)
       return { data, limit: 0, offset: 0, total }
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -96,10 +116,13 @@ export class DevicesService {
         .skip(limit * offset)
       return { data, limit, offset, total }
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -110,10 +133,13 @@ export class DevicesService {
         { path: 'owner', select: 'username first_name last_name' },
       ])
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -136,7 +162,9 @@ export class DevicesService {
           msg: 'Device private key or serie already exists!',
         })
       }
-
+      if (updateDeviceDto.serie) {
+        this.MqttService.subscribe(`${updateDeviceDto?.serie}/up`)
+      }
       const updated = await this.deviceModel.findByIdAndUpdate(
         id,
         updateDeviceDto,
@@ -148,10 +176,13 @@ export class DevicesService {
         throw new BadRequestException({ msg: 'Qurilmani yangilashda xatolik' })
       }
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 
@@ -159,17 +190,23 @@ export class DevicesService {
     try {
       const removed = await this.deviceModel.findById(id)
       deleteFile('passports', `${removed.serie}.json`)
-      const deleted = await this.deviceModel.findByIdAndDelete(id)
+      const deleted: FlattenMaps<Device> & { _id: ObjectId } =
+        await this.deviceModel.findByIdAndDelete(id, { new: true })
+      this.MqttService.unsubscribe(`${deleted.serie}/up`)
+
       if (deleted) {
         return { msg: "Qurilma o'chirildi." }
       } else {
         throw new BadRequestException({ msg: 'Qurilmani ochirishda xatolik' })
       }
     } catch (error) {
-      throw new BadRequestException({
-        msg: "Keyinroq urinib ko'ring...",
-        error,
-      })
+      if (!(error instanceof HttpException)) {
+        error = new HttpException(
+          error.message || "Birozdan so'ng urinib ko'ring",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      throw error
     }
   }
 }

@@ -55,22 +55,6 @@ export class ServerdataService {
     }
   }
 
-  async update ({ id }: ParamIdDto, updateServerdatumDto: UpdateServerdatumDto) {
-    try {
-      const updated = await this.serverDataModel.findByIdAndUpdate(
-        id,
-        updateServerdatumDto,
-        { new: true }
-      )
-      if (!updated) {
-        throw new BadRequestException({ msg: 'Server malumoti mavjud emas.' })
-      } else {
-        return { msg: 'Muvaffaqqiyatli yangilandi.' }
-      }
-    } catch (error) {
-      throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
-    }
-  }
 
   async remove ({ id }: ParamIdDto) {
     try {

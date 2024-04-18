@@ -1,10 +1,10 @@
 import { HttpService } from '@nestjs/axios'
-import { BadRequestException, Injectable, Res } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, Res } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { AxiosResponse } from 'axios'
 import { Response } from 'express'
-import { Model } from 'mongoose'
+import { FlattenMaps, Model, ObjectId } from 'mongoose'
 import { DataItem, sendedDataFace } from 'src/_shared'
 import { ParamIdDto, QueryDto } from 'src/_shared/query.dto'
 import { CustomRequest, PaginationResponse } from 'src/_shared/response'
@@ -16,16 +16,83 @@ import * as XLSX from 'xlsx'
 import { Basedata } from './Schema/Basedatas'
 import { BasedataQueryDto } from './dto/basedata.query.dto'
 import { CreateBasedatumDto } from './dto/create-basedatum.dto'
+import { MqttService } from 'src/mqtt/mqtt.service'
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager'
 
 @Injectable()
 export class BasedataService {
+  status: string = 'temp' // Class-level variable
+
   constructor (
     private httpService: HttpService,
     @InjectModel(Basedata.name) private basedataModel: Model<Basedata>,
     @InjectModel(Device.name) private deviceModel: Model<Device>,
-    @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>
-  ) {}
-  // ?
+    @InjectModel(Serverdata.name) private serverDataModel: Model<Serverdata>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private mqttService: MqttService
+  ) {
+    this.mqttService.client.on('connect', async () => {
+      console.info('Connected successfully')
+    })
+    this.mqttService.client.on('message', async (topic, message, pac) => {
+      const num = parseInt(message.toString('hex', 3, 5), 16) / 10
+      const serie = topic.split('/')[0]
+
+      if (message[0] === 2 && message[1] === 3) {
+        return this.cacheManager.set(`${serie}/level`, num, 1200000)
+      }
+      this.cacheManager.set(`${serie}/${this.status}`, num, 1200000)
+    })
+  }
+  @Cron(CronExpression.EVERY_HOUR)
+  async createAuto () {
+    try {
+      const devices = await this.deviceModel.find()
+      const date_in_ms = new Date().getTime()
+      this.status = 'temp'
+      devices.map(async (dev: any) => {
+        const datas = await this.cacheManager.store.mget(
+          `${dev.serie}/level`,
+          `${dev.serie}/temp`,
+          `${dev.serie}/sal`
+        )
+        const baseData = await this.basedataModel.create({
+          salinity: +datas[2] || 0,
+          level: +datas[0] || 0,
+          temperature: +datas[1] ||0,
+          date_in_ms,
+          signal: datas.length <3 ? "nosignal" :"good",
+          device: dev._id,
+        })
+        this.fetchData(dev, baseData)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @Cron('50 * * * *')
+  async levelCatcher () {
+    const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
+      await this.deviceModel.find().lean()
+    for (const device of devices) {
+      console.log(device.serie)
+      this.mqttService.sendMessage(`${device.serie}/up`, 'level')
+      return this.mqttService.sendMessage(`${device.serie}/up`, 'temp')
+    }
+  }
+
+  @Cron('55 * * * *')
+  async salCatcher () {
+    this.status = 'sal'
+    const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
+      await this.deviceModel.find().lean()
+    for (const device of devices) {
+      console.log(device.serie)
+      return this.mqttService.sendMessage(`${device.serie}/up`, 'sal')
+    }
+  }
+  // !
   async create (createBasedata: CreateBasedatumDto) {
     try {
       const date_in_ms = new Date().getTime()
@@ -320,29 +387,7 @@ export class BasedataService {
       throw new BadRequestException({ msg: "Keyinroq urinib ko'ring..." })
     }
   }
-  @Cron(CronExpression.EVERY_HOUR)
-  async createAuto () {
-    try {
-      const devices = await this.deviceModel.find()
-      const date_in_ms = new Date().getTime()
-      devices.map(async (dev: any) => {
-        const { level, salinity, temperature } = await getDataFromDevice(
-          dev.serie
-        )
-        const baseData = await this.basedataModel.create({
-          salinity,
-          level,
-          temperature,
-          date_in_ms,
-          signal: 'good',
-          device: dev._id,
-        })
-        this.fetchData(dev, baseData)
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }
+
   fetchData (dev: Device, basedata: any) {
     const { level, salinity, temperature, date_in_ms } = basedata
     const url = 'http://89.236.195.198:3010'
