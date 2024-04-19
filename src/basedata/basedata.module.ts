@@ -13,7 +13,9 @@ import { CacheModule } from '@nestjs/cache-manager'
 
 @Module({
   imports: [
-    CacheModule.register(),
+    CacheModule.register({
+      isGlobal: true
+    }),
     MongooseModule.forFeature([
       { name: Basedata.name, schema: BasedataSchema },
       { name: Device.name, schema: DeviceSchema },
