@@ -37,7 +37,7 @@ export class BasedataService {
     this.mqttService.client.on('message', async (topic, message, pac) => {
       const num = parseInt(message.toString('hex', 3, 5), 16) / 10
       const serie = topic.split('/')[0]
-
+      console.log(serie, num , this.status)
       if (message[0] === 2 && message[1] === 3) {
         return this.cacheManager.set(`${serie}/level`, num, 1200000)
       }
@@ -50,21 +50,33 @@ export class BasedataService {
       const devices = await this.deviceModel.find()
       const date_in_ms = new Date().getTime()
       this.status = 'temp'
-      devices.map(async (dev: any) => {
+      // Map over devices and retrieve data from cache for each device
+      const dataPromises = devices.map(async (dev: any) => {
         const datas = await this.cacheManager.store.mget(
           `${dev.serie}/level`,
           `${dev.serie}/temp`,
           `${dev.serie}/sal`
         )
+        return {
+          device: dev,
+          datas: datas,
+        }
+      })
+
+      // Wait for all data retrieval promises to resolve
+      const deviceDataArray = await Promise.all(dataPromises)
+      console.log(deviceDataArray)
+      // Iterate over retrieved data and create basedataModel for each device
+      deviceDataArray.forEach(async ({ device, datas }) => {
         const baseData = await this.basedataModel.create({
           salinity: +datas[2] || 0,
           level: +datas[0] || 0,
-          temperature: +datas[1] ||0,
+          temperature: +datas[1] || 0,
           date_in_ms,
-          signal: datas.length <3 ? "nosignal" :"good",
-          device: dev._id,
+          signal: datas.some(data => data === undefined) ? 'nosignal' : 'good',
+          device: device._id,
         })
-        this.fetchData(dev, baseData)
+        this.fetchData(device, baseData)
       })
     } catch (error) {
       console.log(error)
