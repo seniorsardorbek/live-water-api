@@ -35,6 +35,7 @@ export class BasedataService {
       console.info('Connected successfully')
     })
     this.mqttService.client.on('message', async (topic, message, pac) => {
+      if (message.length > 14 )  return
       const num = parseInt(message.toString('hex', 3, 5), 16) / 10
       const serie = topic.split('/')[0]
       console.log(serie, num , this.status)
