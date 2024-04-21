@@ -35,6 +35,7 @@ import { CustomRequest } from 'src/_shared/response'
 export class BasedataController {
   constructor(private readonly basedataService: BasedataService) {}
   // !
+  
   @Post()
   @ApiCreatedResponse({
     description: 'Automatically generated basedata ',
@@ -42,6 +43,10 @@ export class BasedataController {
   })
   create(@Body() createBasedatumDto: CreateBasedatumDto) {
     return this.basedataService.create(createBasedatumDto)
+  }
+  @Get('catcher')
+  cat() {
+    return this.basedataService.levelCatcher()
   }
   @Get('last-updated')
   @ApiOperation({

@@ -20,13 +20,13 @@ export class MqttService {
     })
   }
 
-  sendMessage (topic: string, action: string): void {
+  sendMessage (topic: string, action: "temp" | "level"|"sal"): void {
     const actions = {
       level: Buffer.from([0x02, 0x03, 0x00, 0x04, 0x00, 0x01, 0xc5, 0xf8]),
       temp: Buffer.from([0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0a]),
       sal: Buffer.from([0x01, 0x03, 0x00, 0x03, 0x00, 0x01, 0x74, 0x0a]),
     }
-    console.log(topic, actions[action]);
+    console.log("sendmessage" ,topic, actions[action] );
     this.client.publish(topic, actions[action])
   }
 

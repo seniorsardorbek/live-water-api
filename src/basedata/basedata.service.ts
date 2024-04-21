@@ -35,10 +35,10 @@ export class BasedataService {
       console.info('Connected successfully')
     })
     this.mqttService.client.on('message', async (topic, message, pac) => {
-      if (message.length > 14 )  return
+      if (message.length > 14) return
       const num = parseInt(message.toString('hex', 3, 5), 16) / 10
       const serie = topic.split('/')[0]
-      console.log(serie, num , this.status)
+      console.log("onmessage" , topic , num , message);
       if (message[0] === 2 && message[1] === 3) {
         return this.cacheManager.set(`${serie}/level`, num, 1200000)
       }
@@ -66,7 +66,6 @@ export class BasedataService {
 
       // Wait for all data retrieval promises to resolve
       const deviceDataArray = await Promise.all(dataPromises)
-      console.log(deviceDataArray)
       // Iterate over retrieved data and create basedataModel for each device
       deviceDataArray.forEach(async ({ device, datas }) => {
         const baseData = await this.basedataModel.create({
@@ -89,9 +88,8 @@ export class BasedataService {
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
-      console.log(device.serie)
-      this.mqttService.sendMessage(`${device.serie}/up`, 'level')
-      return this.mqttService.sendMessage(`${device.serie}/up`, 'temp')
+      this.mqttService.sendMessage(`${device.serie}/down`, 'level')
+      return this.mqttService.sendMessage(`${device.serie}/down`, 'temp')
     }
   }
 
@@ -101,8 +99,7 @@ export class BasedataService {
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
-      console.log(device.serie)
-      return this.mqttService.sendMessage(`${device.serie}/up`, 'sal')
+      return this.mqttService.sendMessage(`${device.serie}/down`, 'sal')
     }
   }
   // !
