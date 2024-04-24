@@ -38,7 +38,7 @@ export class BasedataService {
       if (message.length > 14) return
       const num = parseInt(message.toString('hex', 3, 5), 16) / 10
       const serie = topic.split('/')[0]
-      console.log("onmessage" , topic , num , message);
+      console.log('onmessage', topic, num, message)
       if (message[0] === 2 && message[1] === 3) {
         return this.cacheManager.set(`${serie}/level`, num, 1200000)
       }
@@ -89,7 +89,9 @@ export class BasedataService {
       await this.deviceModel.find().lean()
     for (const device of devices) {
       this.mqttService.sendMessage(`${device.serie}/down`, 'level')
-      return this.mqttService.sendMessage(`${device.serie}/down`, 'temp')
+      setTimeout(() => {
+        this.mqttService.sendMessage(`${device.serie}/down`, 'temp')
+      }, 300)
     }
   }
 
