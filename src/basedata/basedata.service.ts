@@ -42,7 +42,17 @@ export class BasedataService {
       if (message[0] === 2 && message[1] === 3) {
         return this.cacheManager.set(`${serie}/level`, num, 1200000)
       }
-      this.cacheManager.set(`${serie}/${this.status}`, num, 1200000)
+      const now = new Date()
+
+      // Get the current hour and minute
+      const currentMinute = now.getMinutes()
+      if (currentMinute >= 50 && currentMinute <= 55) {
+        console.log('The current 50 and 55 ')
+        this.cacheManager.set(`${serie}/temp`, num, 1200000)
+      } else if (currentMinute >= 55 && currentMinute <= 59) {
+        console.log('The current  55 and 59')
+        this.cacheManager.set(`${serie}/${this.status}`, num, 1200000)
+      }
     })
   }
   @Cron(CronExpression.EVERY_HOUR)
@@ -83,15 +93,25 @@ export class BasedataService {
     }
   }
 
-  @Cron('50 * * * *')
+  @Cron('45 * * * *')
   async levelCatcher () {
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
-      this.mqttService.sendMessage(`${device.serie}/down`, 'level')
+      setTimeout(() => {
+        this.mqttService.sendMessage(`${device.serie}/down`, 'level')
+      }, 500)
+    }
+  }
+
+  @Cron('50 * * * *')
+  async tempCatcher () {
+    const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
+      await this.deviceModel.find().lean()
+    for (const device of devices) {
       setTimeout(() => {
         this.mqttService.sendMessage(`${device.serie}/down`, 'temp')
-      }, 300)
+      }, 500)
     }
   }
 
@@ -101,7 +121,9 @@ export class BasedataService {
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
-      return this.mqttService.sendMessage(`${device.serie}/down`, 'sal')
+      setTimeout(() => {
+        this.mqttService.sendMessage(`${device.serie}/down`, 'sal')
+      }, 500)
     }
   }
   // !
