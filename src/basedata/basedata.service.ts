@@ -51,7 +51,7 @@ export class BasedataService {
         this.cacheManager.set(`${serie}/temp`, num, 1200000)
       } else if (currentMinute >= 55 && currentMinute <= 59) {
         console.log('The current  55 and 59')
-        this.cacheManager.set(`${serie}/${this.status}`, num, 1200000)
+        this.cacheManager.set(`${serie}/sal`, num, 1200000)
       }
     })
   }
@@ -95,6 +95,7 @@ export class BasedataService {
 
   @Cron('45 * * * *')
   async levelCatcher () {
+    this.status = 'level'
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
@@ -106,6 +107,7 @@ export class BasedataService {
 
   @Cron('50 * * * *')
   async tempCatcher () {
+    this.status = 'temp'
     const devices: (FlattenMaps<Device> & { _id: ObjectId })[] =
       await this.deviceModel.find().lean()
     for (const device of devices) {
