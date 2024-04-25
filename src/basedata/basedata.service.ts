@@ -39,19 +39,20 @@ export class BasedataService {
       const num = parseInt(message.toString('hex', 3, 5), 16) / 10
       const serie = topic.split('/')[0]
       console.log('onmessage', topic, num, message)
-      if (message[0] === 2 && message[1] === 3) {
+      if (message[0] === 2 && message[1] === 3 && this.status ==="level") {
         return this.cacheManager.set(`${serie}/level`, num, 1200000)
       }
       const now = new Date()
 
       // Get the current hour and minute
-      const currentMinute = now.getMinutes()
-      if (currentMinute >= 50 && currentMinute <= 55) {
+      // const currentMinute = now.getMinutes()
+      if (   this.status === "temp") {
         console.log('The current 50 and 55 ')
-        this.cacheManager.set(`${serie}/temp`, num, 1200000)
-      } else if (currentMinute >= 55 && currentMinute <= 59) {
+        return this.cacheManager.set(`${serie}/temp`, num, 1200000)
+      } 
+       if ( this.status === "sal") {
         console.log('The current  55 and 59')
-        this.cacheManager.set(`${serie}/sal`, num, 1200000)
+       return  this.cacheManager.set(`${serie}/sal`, num, 1200000)
       }
     })
   }
